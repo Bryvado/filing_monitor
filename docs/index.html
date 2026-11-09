@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Texas Filing Monitor</title>
+<style>
+  :root { --bg:#fbfbf9; --fg:#1c1c1a; --mut:#6b6b66; --line:#e2e1dc; --card:#fff; --acc:#9a3412; --bar:#e8d5c8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161615; --fg:#ecebe6; --mut:#9c9b94; --line:#33322f; --card:#1f1f1d; --acc:#f0a070; --bar:#4a3528; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui, sans-serif; }
+  main { max-width:1200px; margin:0 auto; padding:24px 16px 60px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--mut); margin-bottom:20px; }
+  .grid { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; }
+  @media (max-width:860px) { .grid { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); margin:0 0 10px; }
+  .cat { position:relative; display:flex; justify-content:space-between; gap:8px; width:100%; padding:4px 6px; margin:2px 0;
+         border:0; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:4px; }
+  .cat i { position:absolute; inset:0 auto 0 0; background:var(--bar); border-radius:4px; z-index:0; }
+  .cat span { position:relative; z-index:1; }
+  .cat.on { outline:2px solid var(--acc); }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  input, select { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); }
+  input[type=search] { flex:1; min-width:200px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); padding:6px 8px; border-bottom:1px solid var(--line); }
+  td { padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  td.id { white-space:nowrap; font-weight:600; }
+  a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
+  .tag { display:inline-block; padding:1px 7px; border-radius:10px; background:var(--bar); font-size:12.5px; white-space:nowrap; }
+  .tag.sec { background:none; border:1px solid var(--line); color:var(--mut); }
+  .small { font-size:12.5px; color:var(--mut); }
+  .new { color:var(--acc); font-size:11px; font-weight:700; margin-left:4px; }
+  #more { margin:14px auto; display:block; padding:8px 16px; cursor:pointer; }
+  ul.ev { list-style:none; margin:0; padding:0; max-height:320px; overflow:auto; }
+  ul.ev li { padding:4px 0; border-bottom:1px solid var(--line); font-size:13px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Texas Filing Monitor <span id="sess"></span></h1>
+  <div class="sub" id="sub">Loading…</div>
+  <div class="grid">
+    <aside>
+      <div class="card"><h2>Categories</h2><div id="cats"></div></div>
+      <div class="card" style="margin-top:16px"><h2>Recent activity</h2><ul class="ev" id="events"></ul></div>
+    </aside>
+    <section>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Search bill number, caption, author…">
+        <select id="chamber"><option value="">Both chambers</option><option>House</option><option>Senate</option></select>
+        <select id="basis"><option value="">Text or caption</option><option value="text">Categorized from text</option><option value="caption">Caption only</option></select>
+        <select id="sort"><option value="new">Newest filed</option><option value="num">Bill number</option><option value="conf">Lowest confidence</option></select>
+      </div>
+      <div class="small" id="count"></div>
+      <table><thead><tr><th>Bill</th><th>Filed</th><th>Caption</th><th>Category</th></tr></thead><tbody id="rows"></tbody></table>
+      <button id="more" hidden>Show more</button>
+    </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let bills = [], meta = {}, cat = "", limit = 300;
+const get = f => fetch("data/" + f, {cache: "no-store"}).then(r => r.ok ? r.json() : Promise.reject(f));
+
+Promise.all([get("bills.json"), get("meta.json"), get("changes.json").catch(() => [])]).then(([b, m, ev]) => {
+  bills = b; meta = m;
+  $("sess").textContent = m.session;
+  $("sub").textContent = `${m.total} filings tracked, ${m.with_text} with text posted. Last change ${fmt(m.last_change)}; checked ${fmt(m.checked)}.`;
+  $("events").innerHTML = ev.slice(-150).reverse().map(e => {
+    const what = e.event === "new" ? `filed, ${esc(e.category)}`
+      : e.event === "text_posted" ? `text posted, ${e.was && e.was !== e.category ? esc(e.was) + " → " : ""}${esc(e.category)}`
+      : `caption changed, ${esc(e.category)}`;
+    return `<li><b>${esc(e.bill)}</b> ${what} <span class="small">${fmt(e.ts)}</span></li>`;
+  }).join("") || "<li class='small'>Nothing yet.</li>";
+  drawCats(); draw();
+}).catch(() => { $("sub").textContent = "No data yet. Run monitor.py or wait for the first scheduled run."; });
+
+function fmt(ts) { return ts ? new Date(ts).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never"; }
+
+function drawCats() {
+  const entries = Object.entries(meta.by_category || {}), max = Math.max(1, ...entries.map(e => e[1]));
+  $("cats").innerHTML = entries.map(([c, n]) =>
+    `<button class="cat${c === cat ? " on" : ""}" data-c="${esc(c)}"><i style="width:${100 * n / max}%"></i><span>${esc(c)}</span><span>${n}</span></button>`).join("");
+}
+$("cats").onclick = e => { const b = e.target.closest(".cat"); if (!b) return; cat = cat === b.dataset.c ? "" : b.dataset.c; limit = 300; drawCats(); draw(); };
+
+function draw() {
+  const q = $("q").value.trim().toLowerCase(), ch = $("chamber").value, ba = $("basis").value, so = $("sort").value;
+  let r = bills.filter(b =>
+    (!cat || b.category === cat || (b.secondary || []).includes(cat)) &&
+    (!ch || b.chamber === ch) && (!ba || b.basis === ba) &&
+    (!q || (b.id + " " + b.id.replace(" ", "") + " " + b.caption + " " + (b.authors || []).join(" ")).toLowerCase().includes(q)));
+  const num = (a, b) => a.type.localeCompare(b.type) || a.number - b.number;
+  r.sort(so === "num" ? num
+    : so === "conf" ? (a, b) => a.confidence - b.confidence || num(a, b)
+    : (a, b) => (b.filed || b.first_seen || "").localeCompare(a.filed || a.first_seen || "") || num(a, b));
+  $("count").textContent = `${r.length} shown`;
+  const fresh = meta.last_change;
+  $("rows").innerHTML = r.slice(0, limit).map(b => {
+    const hist = `https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${b.type}${b.number}`;
+    return `<tr>
+      <td class="id"><a href="${hist}" target="_blank" rel="noopener">${esc(b.id)}</a>${b.first_seen === fresh ? '<span class="new">NEW</span>' : ""}
+        <div class="small">${esc((b.authors || []).slice(0, 2).join(", "))}${(b.authors || []).length > 2 ? " +" + (b.authors.length - 2) : ""}</div></td>
+      <td class="small">${esc(b.filed || "")}</td>
+      <td>${esc(b.caption || "(no caption posted yet)")}
+        <div class="small">${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">bill text</a>` : "text not posted"}${(b.tlo_subjects || []).length ? " · TLO: " + esc(b.tlo_subjects.slice(0, 3).join("; ")) : ""}</div></td>
+      <td><span class="tag">${esc(b.category)}</span> ${(b.secondary || []).map(s => `<span class="tag sec">${esc(s)}</span>`).join(" ")}
+        <div class="small" title="${esc((b.evidence || []).join(", "))}">${b.basis === "text" ? "from text" : "from caption"} · ${Math.round(100 * (b.confidence || 0))}%</div></td>
+    </tr>`;
+  }).join("");
+  $("more").hidden = r.length <= limit;
+}
+for (const id of ["q", "chamber", "basis", "sort"]) $(id).addEventListener("input", () => { limit = 300; draw(); });
+$("more").onclick = () => { limit += 300; draw(); };
+</script>
+</body>
+</html>
