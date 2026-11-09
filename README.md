@@ -26,4 +26,4 @@ The classifier scores every bill against the taxonomy in `CATEGORIES` at the top
     python monitor.py --all-types     # also HCR/SCR/HR/SR
     python monitor.py --source tests/fixtures --out /tmp/out   # offline, synthetic fixtures
 
-The GitHub Action in `.github/workflows/monitor.yml` runs hourly and commits any changes. To see the dashboard, enable GitHub Pages for the `docs/` folder on `main`.
+The GitHub Action in `.github/workflows/monitor.yml` runs every 15 minutes and commits any changes. To see the dashboard, enable GitHub Pages for the `docs/` folder on `main`.

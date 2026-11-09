@@ -108,7 +108,7 @@ function draw() {
       <td class="id"><a href="${hist}" target="_blank" rel="noopener">${esc(b.id)}</a>${b.first_seen === fresh ? '<span class="new">NEW</span>' : ""}
         <div class="small">${esc((b.authors || []).slice(0, 2).join(", "))}${(b.authors || []).length > 2 ? " +" + (b.authors.length - 2) : ""}</div></td>
       <td class="small">${esc(b.filed || "")}</td>
-      <td>${esc(b.caption || "(no caption posted yet)")}
+      <td>${esc(b.caption || "(caption pending: filed within the last hour or so)")}
         <div class="small">${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">bill text</a>` : "text not posted"}${(b.tlo_subjects || []).length ? " · TLO: " + esc(b.tlo_subjects.slice(0, 3).join("; ")) : ""}</div></td>
       <td><span class="tag">${esc(b.category)}</span> ${(b.secondary || []).map(s => `<span class="tag sec">${esc(s)}</span>`).join(" ")}
         <div class="small" title="${esc((b.evidence || []).join(", "))}">${b.basis === "text" ? "from text" : "from caption"} · ${Math.round(100 * (b.confidence || 0))}%</div></td>
