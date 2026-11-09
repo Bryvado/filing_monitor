@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 
 FTP_HOST = "ftp.legis.state.tx.us"
-CLASSIFIER_VERSION = 1          # bump after editing CATEGORIES to re-score every bill
+CLASSIFIER_VERSION = 2          # bump after editing CATEGORIES to re-score every bill
 MIN_SCORE = 2.0                 # below this a bill is left Uncategorized
 SECONDARY_RATIO = 0.6           # other categories this close to the top one are kept as secondary
 CAPTION_WEIGHT = 3.0            # a caption hit counts this much relative to a body hit
@@ -68,7 +68,8 @@ CATEGORIES = {
         "strong": ["criminal offense", "criminal penalt", "peace officer", "law enforcement", "bail",
                    "community supervision", "parole", "department of criminal justice", "felony",
                    "misdemeanor", "human trafficking", "fentanyl", "controlled substance",
-                   "sex offender", "capital murder", "death penalty", "county jail", "inmate"],
+                   "sex offender", "capital murder", "death penalty", "county jail", "inmate",
+                   "correctional officer", "body.worn camera", "habeas corpus", "criminal history"],
         "terms": ["offense", "prosecut", "defendant", "arrest", "punishment", "convict", "police",
                   "sheriff", "magistrate", "confinement", "victim", "juvenile"],
     },
@@ -76,7 +77,7 @@ CATEGORIES = {
         "codes": {"Civil Practice and Remedies Code": 2.5, "Estates Code": 2.0},
         "strong": ["civil action", "civil liabilit", "district court", "court of appeals", "judicial district",
                    "statutory county court", "probate", "guardianship", "tort", "attorney's fees",
-                   "business court", "jury service", "arbitration"],
+                   "business court", "jury service", "arbitration", "wrongful death", "juror"],
         "terms": ["court", "judge", "lawsuit", "damages", "plaintiff", "litigation", "judicial",
                   "justice of the peace", "clerk"],
     },
@@ -92,7 +93,7 @@ CATEGORIES = {
         "strong": ["sales and use tax", "franchise tax", "sales tax", "general appropriations",
                    "appropriation", "comptroller of public accounts", "economic stabilization fund",
                    "severance tax", "hotel occupancy tax", "motor fuel tax", "state budget",
-                   "legislative budget board"],
+                   "legislative budget board", "trust fund", "private activity bond", "public securit"],
         "terms": ["tax", "revenue", "comptroller", "fiscal", "rebate", "state fund", "treasury"],
     },
     "Health Care": {
@@ -100,7 +101,8 @@ CATEGORIES = {
         "strong": ["medicaid", "hospital", "health care provider", "health benefit plan", "physician",
                    "mental health", "prescription drug", "pharmac", "nursing facilit", "telehealth",
                    "telemedicine", "public health", "vaccin", "immuniz", "health and human services commission",
-                   "emergency medical", "behavioral health"],
+                   "emergency medical", "behavioral health", "assisted living", "breast-feeding",
+                   "hospice", "palliative"],
         "terms": ["patient", "medical", "health", "nurse", "disease", "clinic", "dental", "opioid"],
     },
     "Abortion & Reproductive Health": {
@@ -129,7 +131,8 @@ CATEGORIES = {
         "strong": ["ercot", "electric(?:ity)? (?:grid|generation|utilit|cooperative|market)",
                    "public utility commission", "railroad commission", "oil and gas", "natural gas",
                    "power region", "transmission and distribution", "renewable energy", "nuclear",
-                   "battery energy storage", "pipeline", "electric vehicle charging", "geothermal"],
+                   "battery energy storage", "pipeline", "electric vehicle charging", "geothermal",
+                   "uranium", "mining"],
         "terms": ["electric", "utilit", "energy", "solar", "wind", "petroleum", "broadband", "telecommunicat"],
     },
     "Water & Environment": {
@@ -167,7 +170,8 @@ CATEGORIES = {
                   "Business Organizations Code": 2.5},
         "strong": ["insurer", "insurance polic", "deceptive trade", "consumer protection", "financial institution",
                    "bank", "credit union", "corporation", "limited liability", "securities", "windstorm",
-                   "department of insurance", "payday", "digital asset", "cryptocurrenc", "economic development"],
+                   "department of insurance", "payday", "digital asset", "cryptocurrenc", "economic development",
+                   "currency", "stored value card", "small business"],
         "terms": ["insurance", "business", "consumer", "commerce", "loan", "contract", "merchant", "franchise"],
     },
     "Labor & Occupations": {
@@ -210,6 +214,13 @@ CATEGORIES = {
                    "cannabis", "marihuana", "marijuana", "compassionate.use", "tetrahydrocannabinol",
                    "e-cigarette", "tobacco", "vape", "consumable hemp"],
         "terms": ["liquor", "beer", "wine", "wager", "gaming", "distiller", "brewer"],
+    },
+    "Commemorative & State Symbols": {
+        "codes": {},
+        "strong": ["designating .{0,60}? as .{0,80}?(?:day|week|month)", "official state", "state bird",
+                   "state symbol", "heritage (?:day|week|month)", "memorial highway", "state holiday",
+                   "place designation"],
+        "terms": ["commemorat", "recognition day", "in honor of"],
     },
     "Veterans & Military": {
         "codes": {},
@@ -450,6 +461,27 @@ def caption_from_text(text):
     return (m.group(1)[0].upper() + m.group(1)[1:] + ".") if m else ""
 
 
+def is_real_text(text):
+    """The server posts a short placeholder page before a bill's text is ready."""
+    return len(text) >= 300 and re.search(r"BE IT (?:ENACTED|RESOLVED)", text) is not None
+
+
+def cached_text(src, cache_dir, bid, path, sig):
+    """Stripped bill text, read from the local cache when the FTP signature still matches."""
+    fn = os.path.join(cache_dir, bid.replace(" ", "") + ".txt")
+    try:
+        with open(fn, encoding="utf-8") as f:
+            head, _, text = f.read().partition("\n")
+        if head == sig:
+            return text, False
+    except OSError:
+        pass
+    text = html_to_text(src.read(path))
+    with open(fn, "w", encoding="utf-8") as f:
+        f.write(sig + "\n" + text)
+    return text, True
+
+
 def body_only(text):
     """Drop the header so the body score isn't just the caption counted twice."""
     m = re.search(r"BE IT (?:ENACTED|RESOLVED)[^:]{0,80}:", text)
@@ -479,10 +511,13 @@ def main():
     ap.add_argument("--session", default="90R")
     ap.add_argument("--source", help="local directory mirroring the FTP layout (default: live FTP)")
     ap.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "docs", "data"))
+    ap.add_argument("--cache", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache"),
+                    help="where stripped bill text is kept between runs")
     ap.add_argument("--all-types", action="store_true", help="include concurrent and simple resolutions")
     args = ap.parse_args()
 
     os.makedirs(args.out, exist_ok=True)
+    os.makedirs(args.cache, exist_ok=True)
     bills_path = os.path.join(args.out, "bills.json")
     bills = {b["id"]: b for b in load(bills_path, [])}
     events = load(os.path.join(args.out, "changes.json"), [])
@@ -533,14 +568,18 @@ def main():
             need_text = choice and (choice[1] != rec["text_sig"]
                                     or dirty or rec.get("clf") != CLASSIFIER_VERSION)
             if need_text:
-                full = html_to_text(src.read(choice[0]))
-                n_fetch += 1
-                body = body_only(full)
-                if not rec["caption"]:
-                    rec["caption"] = caption_from_text(full)
-                rec.update(has_text=True, text_version=ver, text_sig=choice[1], text_chars=len(full),
-                           text_url="https://capitol.texas.gov/tlodocs/%s/billtext/html/%s"
-                                    % (args.session, choice[2]))
+                full, fetched = cached_text(src, args.cache, bid, choice[0], choice[1])
+                n_fetch += fetched
+                rec["text_sig"] = choice[1]
+                if is_real_text(full):
+                    body = body_only(full)
+                    if not rec["caption"]:
+                        rec["caption"] = caption_from_text(full)
+                    rec.update(has_text=True, text_version=ver, text_chars=len(full),
+                               text_url="https://capitol.texas.gov/tlodocs/%s/billtext/html/%s"
+                                        % (args.session, choice[2]))
+                else:   # placeholder page: keep scoring from the caption until real text lands
+                    rec.update(has_text=False, text_version=None, text_chars=0, text_url=None)
                 dirty = True
         except Exception as e:   # one bad file shouldn't sink the run; it is retried next time
             n_err += 1
