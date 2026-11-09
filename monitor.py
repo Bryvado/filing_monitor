@@ -296,9 +296,16 @@ class FTPSource:
         self.host, self.ftp, self.use_mlsd = host, None, True
         self._connect()
 
-    def _connect(self):
-        self.ftp = ftplib.FTP(self.host, timeout=60)
-        self.ftp.login()
+    def _connect(self, tries=6):
+        for attempt in range(tries):     # the server refuses connections now and then when busy
+            try:
+                self.ftp = ftplib.FTP(self.host, timeout=60)
+                self.ftp.login()
+                return
+            except (ftplib.Error, OSError, EOFError):
+                if attempt == tries - 1:
+                    raise
+                time.sleep(15 * (attempt + 1))
 
     def _retry(self, fn):
         for attempt in range(3):
