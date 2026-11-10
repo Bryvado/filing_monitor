@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 
 FTP_HOST = "ftp.legis.state.tx.us"
-CLASSIFIER_VERSION = 3          # bump after editing CATEGORIES to re-score every bill
+CLASSIFIER_VERSION = 4          # bump after editing CATEGORIES to re-score every bill
 MIN_SCORE = 2.0                 # below this a bill is left Uncategorized
 SECONDARY_RATIO = 0.6           # other categories this close to the top one are kept as secondary
 BODY_WEIGHT = 1.0              # scales body hits against caption hits
@@ -51,7 +51,10 @@ CATEGORIES = {
                    "end-of-course",
                    "substitute teach",
                    "public school",
-                   "teacher"],
+                   "teacher",
+                   "high school",
+                   "graduation",
+                   "free or reduced-price lunch"],
         "terms": ["teacher", "school", "curriculum", "campus", "educator", "kindergarten",
                   "truan", "superintendent", "average daily attendance", "special education",
                    "student"],
@@ -65,7 +68,9 @@ CATEGORIES = {
                    "educational opportunity grant",
                    "student financial aid",
                    "higher education",
-                   "consortium"],
+                   "consortium",
+                   "postsecondary advising",
+                   "college and career"],
         "terms": ["universit", "undergraduate", "faculty", "tenure", "financial aid",
                   "board of regents", "degree program",
                    "college"],
@@ -418,7 +423,14 @@ CATEGORIES = {
                    "state symbol", "heritage (?:day|week|month)", "memorial highway", "state holiday",
                    "place designation",
                    "optional holidays?",
-                   "holidays?\\b"],
+                   "holidays?\\b",
+                   "designation program",
+                   "historical commission",
+                   "historic sites?",
+                   "freedmen",
+                   "medallion",
+                   "historical marker",
+                   "historic texas"],
         "terms": ["commemorat", "recognition day", "in honor of"],
     },
     "Civil Rights & Discrimination": {
@@ -704,7 +716,8 @@ def caption_from_text(text):
 
 def is_real_text(text):
     """The server posts a short placeholder page before a bill's text is ready."""
-    return len(text) >= 300 and re.search(r"BE IT (?:ENACTED|RESOLVED)", text) is not None
+    # length alone: the placeholder is about 130 characters, and some real bills ("As Received") carry no enacting clause
+    return len(text) >= 300
 
 
 def cached_text(src, cache_dir, bid, path, sig):
