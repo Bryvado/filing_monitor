@@ -294,7 +294,8 @@ function initMap() {
   popup = new maplibregl.Popup({closeButton: false, closeOnClick: false, maxWidth: "280px"});
   map.on("load", () => {
     const firstLabel = (map.getStyle().layers.find(l => l.type === "symbol") || {}).id;
-    map.addSource("dist", {type: "geojson", data: {type: "FeatureCollection", features: []}});
+    // full-detail boundaries; MapLibre thins them per zoom level, so the far view stays light and the close view stays exact
+    map.addSource("dist", {type: "geojson", data: {type: "FeatureCollection", features: []}, tolerance: 0.2, maxzoom: 14});
     map.addLayer({id: "dist-fill", type: "fill", source: "dist",
       paint: {"fill-color": "#cfcfcf", "fill-opacity": ["case", ["==", ["get", "n"], 0], 0.55, 0.85]}}, firstLabel);
     map.addLayer({id: "dist-line", type: "line", source: "dist", paint: {"line-color": "#000", "line-width": 0.5}}, firstLabel);
