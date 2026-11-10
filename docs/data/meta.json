@@ -11,7 +11,7 @@
   "Local Government & Special Districts": 62,
   "Human Services & Family": 61,
   "Transportation": 59,
-  "Labor & Occupations": 51,
+  "Labor & Occupations": 50,
   "Higher Education": 49,
   "Business, Finance & Insurance": 43,
   "Property Tax": 41,
@@ -27,11 +27,11 @@
   "Disasters & Emergency Management": 13,
   "Veterans & Military": 10,
   "Abortion & Reproductive Health": 10,
+  "Commemorative & State Symbols": 7,
   "Immigration & Border": 6,
   "Civil Rights & Discrimination": 6,
-  "Commemorative & State Symbols": 5,
-  "Uncategorized": 2
+  "Uncategorized": 1
  },
- "checked": "2026-11-10T02:23:57Z",
+ "checked": "2026-11-10T04:56:43Z",
  "last_change": "2026-11-10T01:15:35Z"
 }
