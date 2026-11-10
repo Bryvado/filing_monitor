@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 
 FTP_HOST = "ftp.legis.state.tx.us"
-CLASSIFIER_VERSION = 4          # bump after editing CATEGORIES to re-score every bill
+CLASSIFIER_VERSION = 5          # bump after editing CATEGORIES to re-score every bill
 MIN_SCORE = 2.0                 # below this a bill is left Uncategorized
 SECONDARY_RATIO = 0.6           # other categories this close to the top one are kept as secondary
 BODY_WEIGHT = 1.0              # scales body hits against caption hits
@@ -54,7 +54,8 @@ CATEGORIES = {
                    "teacher",
                    "high school",
                    "graduation",
-                   "free or reduced-price lunch"],
+                   "free or reduced-price lunch",
+                   "breakthrough program"],
         "terms": ["teacher", "school", "curriculum", "campus", "educator", "kindergarten",
                   "truan", "superintendent", "average daily attendance", "special education",
                    "student"],
