@@ -8,101 +8,148 @@
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js"></script>
 <style>
-  :root { --bg:#fbfbf9; --fg:#1c1c1a; --mut:#6b6b66; --line:#e2e1dc; --card:#fff; --acc:#9a3412; --bar:#e8d5c8; }
+  /* Tokens follow Tailwind's stone neutrals with a single orange accent. */
+  :root { --bg:#fafaf9; --card:#fff; --fg:#1c1917; --mut:#78716c; --line:#e7e5e4; --acc:#c2410c; --bar:#ffedd5; --soft:#f5f5f4; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg:#161615; --fg:#ecebe6; --mut:#9c9b94; --line:#33322f; --card:#1f1f1d; --acc:#f0a070; --bar:#4a3528; }
+    :root { --bg:#0c0a09; --card:#1c1917; --fg:#f5f5f4; --mut:#a8a29e; --line:#292524; --acc:#fb923c; --bar:#431407; --soft:#171412; }
   }
-  * { box-sizing: border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui, sans-serif; }
-  main { max-width:1200px; margin:0 auto; padding:24px 16px 60px; }
-  h1 { font-size:22px; margin:0 0 4px; }
-  .sub { color:var(--mut); margin-bottom:20px; }
-  .grid { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; }
-  @media (max-width:860px) { .grid { grid-template-columns:1fr; } }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px; }
-  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); margin:0 0 10px; }
-  .cat { position:relative; display:flex; justify-content:space-between; gap:8px; width:100%; padding:4px 6px; margin:2px 0;
-         border:0; background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; border-radius:4px; }
-  .cat i { position:absolute; inset:0 auto 0 0; background:var(--bar); border-radius:4px; z-index:0; }
-  .cat span { position:relative; z-index:1; }
-  .cat.on { outline:2px solid var(--acc); }
-  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
-  input, select { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--fg); }
-  input[type=search] { flex:1; min-width:200px; }
-  table { width:100%; border-collapse:collapse; }
-  th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); padding:6px 8px; border-bottom:1px solid var(--line); }
-  td { padding:8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  td.id { white-space:nowrap; font-weight:600; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width:1240px; margin:0 auto; padding:32px 20px 64px; }
   a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
-  .tag { display:inline-block; padding:1px 7px; border-radius:10px; background:var(--bar); font-size:12.5px; white-space:nowrap; }
-  .tag.sec { background:none; border:1px solid var(--line); color:var(--mut); }
-  .small { font-size:12.5px; color:var(--mut); }
-  .new { color:var(--acc); font-size:11px; font-weight:700; margin-left:4px; }
-  .seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
-  .seg button { font:inherit; padding:6px 14px; border:0; background:var(--card); color:var(--fg); cursor:pointer; }
+  :focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+  header h1 { font-size:28px; line-height:1.2; letter-spacing:-0.02em; margin:0; font-weight:650; }
+  header h1 span { font-size:13px; letter-spacing:0; font-weight:600; color:var(--acc); background:var(--bar); padding:2px 10px; border-radius:999px; vertical-align:middle; margin-left:8px; }
+  .lede { color:var(--mut); margin:6px 0 20px; max-width:70ch; }
+  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+  .kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; }
+  .kpi b { display:block; font-size:24px; font-weight:650; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+  .kpi span { color:var(--mut); font-size:13px; }
+  details.how { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:14px; }
+  details.how summary { cursor:pointer; font-weight:600; }
+  details.how p, details.how ul { margin:8px 0 2px; color:var(--mut); max-width:80ch; }
+  details.how ul { padding-left:18px; } details.how li { margin:2px 0; } details.how b { color:var(--fg); font-weight:600; }
+  .grid { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; margin-top:8px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 8px; font-weight:600; }
+  .hint { font-size:12.5px; color:var(--mut); margin:-2px 0 10px; }
+  .cat { position:relative; display:flex; justify-content:space-between; gap:8px; width:100%; padding:5px 8px; margin:2px 0; border:0; background:none;
+         color:inherit; font:inherit; font-size:14px; text-align:left; cursor:pointer; border-radius:6px; font-variant-numeric:tabular-nums; }
+  .cat:hover { background:var(--soft); }
+  .cat i { position:absolute; inset:0 auto 0 0; background:var(--bar); border-radius:6px; z-index:0; }
+  .cat span { position:relative; z-index:1; }
+  .cat.on { outline:2px solid var(--acc); font-weight:600; }
+  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card); }
+  .seg button { font:inherit; font-weight:500; padding:7px 16px; border:0; background:none; color:var(--fg); cursor:pointer; }
   .seg button + button { border-left:1px solid var(--line); }
   .seg button.on { background:var(--acc); color:var(--bg); }
   .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
-  #mapwrap { margin-bottom:16px; }
-  #map { height:540px; border:1px solid var(--line); border-radius:8px; }
+  #viewhelp { color:var(--mut); font-size:14px; }
+  .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+  input, select { font:inherit; font-size:14px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  input[type=search] { flex:1; min-width:220px; } input[type=checkbox] { padding:0; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; background:var(--bar); font-size:13px; cursor:pointer; border:0; color:inherit; font-family:inherit; }
+  .chip.clear { background:none; color:var(--acc); padding-left:4px; }
+  #chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); padding:6px 8px; border-bottom:1px solid var(--line); font-weight:600; }
+  td { padding:12px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  td.id { white-space:nowrap; font-weight:600; width:150px; } td.topic { width:240px; }
+  .tag { display:inline-block; padding:2px 9px; border-radius:999px; background:var(--bar); font-size:12.5px; white-space:nowrap; margin-bottom:3px; }
+  .tag.sec { background:none; border:1px solid var(--line); color:var(--mut); }
+  .small { font-size:12.5px; color:var(--mut); font-weight:400; }
+  .new { color:var(--acc); font-size:10.5px; font-weight:700; margin-left:6px; letter-spacing:.04em; }
+  .empty { text-align:center; color:var(--mut); padding:36px 8px; }
+  #mapwrap, #netwrap { margin-bottom:20px; }
+  #map { height:540px; border:1px solid var(--line); border-radius:10px; }
   .legend { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--mut); }
   .legend i { display:inline-block; width:120px; height:10px; border-radius:3px; background:linear-gradient(90deg,#fde0c5,#8c2d04); }
   .legend b { display:inline-block; width:14px; height:10px; border-radius:3px; background:#cfcfcf; margin-left:8px; }
-  .chip { display:inline-block; padding:3px 10px; border-radius:12px; background:var(--bar); font-size:13px; cursor:pointer; }
-  .maplibregl-popup-content { font:13px/1.4 system-ui, sans-serif; color:#1c1c1a; padding:10px 12px; }
+  .maplibregl-popup-content { font:13px/1.4 system-ui, sans-serif; color:#1c1917; padding:10px 12px; border-radius:8px; }
   .maplibregl-popup-content h4 { margin:0 0 2px; font-size:14px; }
-  #net { width:100%; height:560px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:grab; }
+  #net { width:100%; height:560px; border:1px solid var(--line); border-radius:10px; background:var(--card); cursor:grab; touch-action:none; }
   #net text { font-size:10px; fill:var(--fg); pointer-events:none; }
-  #netwrap { margin-bottom:16px; }
-  #net { touch-action:none; }
   .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:12px; }
-  @media (max-width:860px) { .mgrid { grid-template-columns:1fr; } }
+  ul.ev { list-style:none; margin:0; padding:0; max-height:300px; overflow:auto; }
+  ul.ev li { padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; }
   #more[hidden] { display:none; }
-  #more { margin:14px auto; display:block; padding:8px 16px; cursor:pointer; }
-  ul.ev { list-style:none; margin:0; padding:0; max-height:320px; overflow:auto; }
-  ul.ev li { padding:4px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  #more { margin:16px auto; display:block; padding:8px 18px; cursor:pointer; font:inherit; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  footer { margin-top:40px; color:var(--mut); font-size:12.5px; }
+  @media (max-width:900px) {
+    .grid { grid-template-columns:1fr; } .kpis { grid-template-columns:repeat(2,1fr); } .mgrid { grid-template-columns:1fr; }
+    #cats { max-height:230px; overflow:auto; padding:3px; }
+  }
+  @media (max-width:640px) {
+    main { padding:20px 14px 48px; } thead { display:none; }
+    td { display:block; width:auto !important; border:0; padding:2px 0; } tr { display:block; padding:12px 0; border-bottom:1px solid var(--line); }
+    #map, #net { height:420px; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>Texas Filing Monitor <span id="sess"></span></h1>
-  <div class="sub" id="sub">Loading…</div>
+  <header>
+    <h1>Texas Filing Monitor <span id="sess"></span></h1>
+    <p class="lede">Every bill filed for the next Texas legislative session, sorted by topic and updated through the day. Session convenes January 12, 2027; members have been able to file since November 9.</p>
+  </header>
+  <div class="kpis">
+    <div class="kpi"><b id="k-total">–</b><span>bills and amendments filed</span></div>
+    <div class="kpi"><b id="k-split">–</b><span>House / Senate</span></div>
+    <div class="kpi"><b id="k-text">–</b><span>with full text posted</span></div>
+    <div class="kpi"><b id="k-upd">–</b><span id="sub">last new filing or text</span></div>
+  </div>
+  <details class="how">
+    <summary>New here? A 20-second guide</summary>
+    <ul>
+      <li><b>HB / SB</b> are House and Senate bills. <b>HJR / SJR</b> are proposed constitutional amendments, which voters must approve.</li>
+      <li>The <b>caption</b> is the bill's official one-sentence summary ("Relating to…"). The full text is usually posted within hours of filing.</li>
+      <li>The <b>author</b> is the member who filed the bill. <b>Coauthors</b> are members of the same chamber who sign on later.</li>
+      <li>Pick a <b>topic</b> on the left to filter everything. Use <b>Bills</b> to read them, <b>Map</b> to see where they come from, and <b>Network</b> to see who files together.</li>
+    </ul>
+  </details>
   <div class="grid">
     <aside>
-      <div class="card"><h2>Categories</h2><div id="cats"></div></div>
-      <div class="card" style="margin-top:16px"><h2>Recent activity</h2><ul class="ev" id="events"></ul></div>
+      <div class="card"><h2>Topics</h2><div class="hint">Click one to filter the list, map and network.</div><div id="cats"></div></div>
+      <div class="card" style="margin-top:16px"><h2>Latest activity</h2><ul class="ev" id="events"></ul></div>
     </aside>
     <section>
       <div class="bar">
-        <div class="seg" id="view"><button data-v="list" class="on">List</button><button data-v="map">Map</button><button data-v="net">Network</button></div>
-        <span id="distchip"></span>
+        <div class="seg" id="view"><button data-v="list" class="on">Bills</button><button data-v="map">Map</button><button data-v="net">Network</button></div>
+        <span id="viewhelp"></span>
       </div>
       <div id="mapwrap" hidden>
+        <details class="how"><summary>How the map is built</summary>
+          <p>A district's shade is the number of bills its member has filed as an author. A bill with several authors counts once for each of them. Authors are matched to districts by name using a member roster that includes those elected in November 2026. District lines come from the Census Bureau.</p></details>
         <div class="bar">
           <div class="seg" id="mapch"><button data-c="House" class="on">House</button><button data-c="Senate">Senate</button></div>
           <span class="legend"><span id="lmin">1</span><i></i><span id="lmax"></span><b></b>none</span>
-          <label class="small"><input type="checkbox" id="inclco"> Include coauthors</label>
-          <span class="small" id="mapnote"></span>
+          <label class="small"><input type="checkbox" id="inclco"> Also count coauthors</label>
         </div>
+        <div class="small" id="mapnote" style="margin-bottom:8px"></div>
         <div id="map"></div>
         <div class="small" id="unplaced" style="margin-top:6px"></div>
       </div>
       <div id="netwrap" hidden>
-        <div class="small" id="netnote" style="margin-bottom:6px"></div>
+        <details class="how"><summary>How the network is built</summary>
+          <p>A line joins two members who put their names on the same bill: the author with each joint author and coauthor. Thicker lines mean more shared bills, and bigger dots mean more bills authored. Few bills have coauthors this early, so expect it to fill in as session nears.</p></details>
+        <div class="small" id="netnote" style="margin-bottom:8px"></div>
         <svg id="net"></svg>
         <div id="member" class="card" style="margin-top:12px" hidden></div>
       </div>
       <div class="filters">
-        <input type="search" id="q" placeholder="Search bill number, caption, author…">
-        <select id="chamber"><option value="">Both chambers</option><option>House</option><option>Senate</option></select>
-        <select id="basis"><option value="">Text or caption</option><option value="text">Categorized from text</option><option value="caption">Caption only</option></select>
-        <select id="sort"><option value="new">Newest filed</option><option value="num">Bill number</option><option value="conf">Lowest confidence</option></select>
+        <input type="search" id="q" placeholder="Search by bill number, keyword or author…" aria-label="Search bills">
+        <select id="chamber" aria-label="Chamber"><option value="">Both chambers</option><option>House</option><option>Senate</option></select>
+        <select id="basis" aria-label="How the topic was assigned"><option value="">Topic from text or caption</option><option value="text">Topic from full text</option><option value="caption">Topic from caption only</option></select>
+        <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="num">By bill number</option><option value="conf">Least certain topic first</option></select>
       </div>
-      <div class="small" id="count"></div>
-      <table><thead><tr><th>Bill</th><th>Filed</th><th>Caption</th><th>Category</th></tr></thead><tbody id="rows"></tbody></table>
+      <div id="chips"><span class="small" id="count"></span><span id="distchip" style="display:contents"></span></div>
+      <details class="how"><summary>How topics are assigned</summary>
+        <p>Each bill gets one main topic from a keyword scorer; no AI model is involved. It weighs the caption most, then the words in the full text and which Texas law codes the bill amends. Until the text is posted, only the caption is used, and the bill is re-scored once it arrives. Against the Legislature's own subject labels the main topic agrees nearly 9 times in 10, so treat it as a guide and check the bill.</p></details>
+      <table><thead><tr><th>Bill</th><th>What it does</th><th>Topic</th></tr></thead><tbody id="rows"></tbody></table>
       <button id="more" hidden>Show more</button>
     </section>
   </div>
+  <footer>Source: Texas Legislature Online public files. Topics are automated and unofficial. Map tiles by OpenFreeMap, © OpenStreetMap contributors.</footer>
 </main>
 <script>
 const $ = id => document.getElementById(id);
@@ -135,24 +182,36 @@ Promise.all([get("bills.json"), get("meta.json"), get("changes.json").catch(() =
   for (const x of bills) x.dists = [...new Set((x.authors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
   for (const x of bills) x.codists = [...new Set((x.coauthors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
   $("sess").textContent = m.session;
-  $("sub").textContent = `${m.total} filings tracked, ${m.with_text} with text posted. Last change ${fmt(m.last_change)}; checked ${fmt(m.checked)}.`;
+  const nf = n => n.toLocaleString();
+  $("k-total").textContent = nf(m.total);
+  $("k-split").textContent = nf(bills.filter(x => x.chamber === "House").length) + " / " + nf(bills.filter(x => x.chamber === "Senate").length);
+  $("k-text").textContent = nf(m.with_text);
+  $("k-upd").textContent = fmt(m.last_change);
+  $("sub").textContent = "last new filing or text · checked " + fmt(m.checked);
   $("events").innerHTML = ev.slice(-150).reverse().map(e => {
-    const what = e.event === "new" ? `filed, ${esc(e.category)}`
-      : e.event === "text_posted" ? `text posted, ${e.was && e.was !== e.category ? esc(e.was) + " → " : ""}${esc(e.category)}`
-      : `caption changed, ${esc(e.category)}`;
+    const what = e.event === "new" ? `filed · ${esc(e.category)}`
+      : e.event === "text_posted" ? (e.was && e.was !== e.category ? `full text posted; topic changed from ${esc(e.was)} to ${esc(e.category)}` : `full text posted · ${esc(e.category)}`)
+      : `caption changed · ${esc(e.category)}`;
     return `<li><b>${esc(e.bill)}</b> ${what} <span class="small">${fmt(e.ts)}</span></li>`;
   }).join("") || "<li class='small'>Nothing yet.</li>";
   drawCats(); draw();
-}).catch(() => { $("sub").textContent = "No data yet. Run monitor.py or wait for the first scheduled run."; });
+}).catch(() => { $("rows").innerHTML = '<tr><td colspan="3" class="empty">No data yet. The first update has not run.</td></tr>'; });
 
 function fmt(ts) { return ts ? new Date(ts).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never"; }
 
 function drawCats() {
   const entries = Object.entries(meta.by_category || {}), max = Math.max(1, ...entries.map(e => e[1]));
-  $("cats").innerHTML = entries.map(([c, n]) =>
+  $("cats").innerHTML = `<button class="cat${cat ? "" : " on"}" data-c=""><span>All topics</span><span>${meta.total || ""}</span></button>` + entries.map(([c, n]) =>
     `<button class="cat${c === cat ? " on" : ""}" data-c="${esc(c)}"><i style="width:${100 * n / max}%"></i><span>${esc(c)}</span><span>${n}</span></button>`).join("");
 }
 $("cats").onclick = e => { const b = e.target.closest(".cat"); if (!b) return; cat = cat === b.dataset.c ? "" : b.dataset.c; limit = 300; drawCats(); draw(); };
+const TYPES = {HB: "House Bill", SB: "Senate Bill", HJR: "House Joint Resolution", SJR: "Senate Joint Resolution", HCR: "House Concurrent Resolution", SCR: "Senate Concurrent Resolution", HR: "House Resolution", SR: "Senate Resolution"};
+const HELP = {list: "Read and search the bills.", map: "See which districts the bills come from.", net: "See which members file bills together."};
+const day = d => d ? new Date(d + "T12:00").toLocaleDateString([], {month: "short", day: "numeric"}) : "";
+const clean = t => t.replace(/\\b|\(\?:|[()?\\]|\.\{0,\d+\}/g, "").replace(/\|/g, "/");
+$("chips").onclick = e => { const c = e.target.closest("[data-clear]"); if (!c) return; const k = c.dataset.clear;
+  if (k === "cat" || k === "all") cat = ""; if (k === "dist" || k === "all") dist = null; if (k === "q" || k === "all") $("q").value = "";
+  if (k === "all") { $("chamber").value = ""; $("basis").value = ""; } limit = 300; drawCats(); draw(); };
 
 function draw() {
   const q = $("q").value.trim().toLowerCase(), ch = $("chamber").value, ba = $("basis").value, so = $("sort").value;
@@ -160,27 +219,34 @@ function draw() {
     (!cat || b.category === cat || (b.secondary || []).includes(cat)) && (!ba || b.basis === ba) &&
     (!q || (b.id + " " + b.id.replace(" ", "") + " " + b.caption + " " + (b.authors || []).join(" ")).toLowerCase().includes(q)));
   let r = base.filter(b => (!ch || b.chamber === ch) && (!dist || (b.chamber === dist.chamber && (b.dists.includes(dist.d) || (inclCo && b.codists.includes(dist.d))))));
-  $("distchip").innerHTML = dist ? `<span class="chip" title="Clear district filter">${dist.chamber} District ${dist.d} ✕</span>` : "";
+  $("viewhelp").textContent = HELP[view];
+  const chips = [cat && `<button class="chip" data-clear="cat">Topic: ${esc(cat)} ✕</button>`,
+    dist && `<button class="chip" data-clear="dist">${dist.chamber} District ${dist.d} ✕</button>`,
+    q && `<button class="chip" data-clear="q">Search: “${esc(q)}” ✕</button>`].filter(Boolean);
+  $("distchip").innerHTML = chips.join("") + (chips.length || ch || ba ? '<button class="chip clear" data-clear="all">Clear all</button>' : "");
   if (view === "map") drawMap(base);
   if (view === "net") drawNet(base);
   const num = (a, b) => a.type.localeCompare(b.type) || a.number - b.number;
   r.sort(so === "num" ? num
     : so === "conf" ? (a, b) => a.confidence - b.confidence || num(a, b)
     : (a, b) => (b.filed || b.first_seen || "").localeCompare(a.filed || a.first_seen || "") || num(a, b));
-  $("count").textContent = `${r.length} shown`;
+  $("count").textContent = r.length === bills.length ? `All ${r.length.toLocaleString()} bills` : `${r.length.toLocaleString()} of ${bills.length.toLocaleString()} bills`;
   const fresh = meta.last_change;
   $("rows").innerHTML = r.slice(0, limit).map(b => {
     const hist = `https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${b.type}${b.number}`;
+    const au = b.authors || [], c = b.confidence || 0;
+    const sure = c >= 0.6 ? "Strong match" : c >= 0.35 ? "Likely match" : "Weak match";
+    const why = (b.evidence || []).map(clean).join(", ");
     return `<tr>
-      <td class="id"><a href="${hist}" target="_blank" rel="noopener">${esc(b.id)}</a>${b.first_seen === fresh ? '<span class="new">NEW</span>' : ""}
-        <div class="small">${esc((b.authors || []).slice(0, 2).join(", "))}${(b.authors || []).length > 2 ? " +" + (b.authors.length - 2) : ""}</div></td>
-      <td class="small">${esc(b.filed || "")}</td>
-      <td>${esc(b.caption || "(caption pending: filed within the last hour or so)")}
-        <div class="small">${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">bill text</a>` : "text not posted"}${(b.tlo_subjects || []).length ? " · TLO: " + esc(b.tlo_subjects.slice(0, 3).join("; ")) : ""}</div></td>
-      <td><span class="tag">${esc(b.category)}</span> ${(b.secondary || []).map(s => `<span class="tag sec">${esc(s)}</span>`).join(" ")}
-        <div class="small" title="${esc((b.evidence || []).join(", "))}">${b.basis === "text" ? "from text" : "from caption"} · ${Math.round(100 * (b.confidence || 0))}%</div></td>
+      <td class="id"><a href="${hist}" target="_blank" rel="noopener" title="Open on Texas Legislature Online">${esc(b.id)}</a>${b.first_seen === fresh ? '<span class="new">NEW</span>' : ""}
+        <div class="small">${TYPES[b.type] || ""}</div>
+        <div class="small">${au.length ? "by " + esc(au.slice(0, 2).join(", ")) + (au.length > 2 ? " +" + (au.length - 2) : "") : ""}</div></td>
+      <td>${esc(b.caption || "Caption not published yet. It usually appears within the hour.")}
+        <div class="small">${b.filed ? "Filed " + day(b.filed) + " · " : ""}${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">Read the bill text</a>` : "Full text not posted yet"}</div></td>
+      <td class="topic"><span class="tag">${esc(b.category)}</span> ${(b.secondary || []).map(x => `<span class="tag sec" title="Also touches on">${esc(x)}</span>`).join(" ")}
+        <div class="small" title="${why ? "Matched on: " + esc(why) : ""}">${b.category === "Uncategorized" ? "No topic matched" : sure + " · from " + (b.basis === "text" ? "full text" : "caption only")}</div></td>
     </tr>`;
-  }).join("");
+  }).join("") || '<tr><td colspan="3" class="empty">No bills match these filters. <button class="chip clear" data-clear="all" onclick="document.querySelector(\'#chips [data-clear=all]\')?.click()">Clear all</button></td></tr>';
   $("more").hidden = r.length <= limit;
 }
 // --- map ---------------------------------------------------------------------------
@@ -198,7 +264,7 @@ function drawMap(base) {
   }
   const max = Math.max(2, ...Object.values(stats).map(s => s.n));
   $("lmax").textContent = max;
-  $("mapnote").textContent = (inclCo ? "Filings authored or coauthored per district" : "Filings authored per district") + (cat ? " in " + cat : "") + ". Click a district to filter the list.";
+  $("mapnote").textContent = (inclCo ? "Bills authored or coauthored, by district" : "Bills authored, by district") + (cat ? " in " + cat : "") + ". Hover for details; click a district to list its bills below.";
   const up = Object.entries(unplaced);
   $("unplaced").textContent = up.length ? "Not placed on the map (author not matched to a district): " + up.map(([a, n]) => `${a} (${n})`).join(", ") : "";
   if (!map) return initMap();
@@ -409,7 +475,7 @@ function renderMember() {
 $("mapch").onclick = e => { const b = e.target.closest("button"); if (!b) return; mapCh = b.dataset.c;
   for (const x of $("mapch").children) x.classList.toggle("on", x === b);
   if (dist && dist.chamber !== mapCh) dist = null; if (popup) popup.remove(); draw(); };
-$("distchip").onclick = () => { dist = null; draw(); };
+
 for (const id of ["q", "chamber", "basis", "sort"]) $(id).addEventListener("input", () => { limit = 300; draw(); });
 $("more").onclick = () => { limit += 300; draw(); };
 </script>
