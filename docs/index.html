@@ -54,6 +54,9 @@
   #net { width:100%; height:560px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:grab; }
   #net text { font-size:10px; fill:var(--fg); pointer-events:none; }
   #netwrap { margin-bottom:16px; }
+  #net { touch-action:none; }
+  .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:12px; }
+  @media (max-width:860px) { .mgrid { grid-template-columns:1fr; } }
   #more[hidden] { display:none; }
   #more { margin:14px auto; display:block; padding:8px 16px; cursor:pointer; }
   ul.ev { list-style:none; margin:0; padding:0; max-height:320px; overflow:auto; }
@@ -87,6 +90,7 @@
       <div id="netwrap" hidden>
         <div class="small" id="netnote" style="margin-bottom:6px"></div>
         <svg id="net"></svg>
+        <div id="member" class="card" style="margin-top:12px" hidden></div>
       </div>
       <div class="filters">
         <input type="search" id="q" placeholder="Search bill number, caption, author…">
@@ -250,7 +254,8 @@ $("view").onclick = e => { const b = e.target.closest("button"); if (!b) return;
 $("inclco").onchange = e => { inclCo = e.target.checked; draw(); };
 
 // --- co-authorship network ---------------------------------------------------------
-let inclCo = false; const netPos = {};
+let inclCo = false, netT = d3.zoomIdentity, selM = null, mSort = "ties", mMode = "all", netRestyle = () => {};
+const netPos = {}, lastDown = {id: null, t: 0};
 function drawNet(base) {
   const nodes = {}, links = {};
   const node = m => nodes[m.chamber + m.district] || (nodes[m.chamber + m.district] = Object.assign({id: m.chamber + m.district, m, n: 0, deg: 0}, netPos[m.chamber + m.district]));
@@ -267,31 +272,139 @@ function drawNet(base) {
   const svg = d3.select("#net"), W = svg.node().clientWidth || 800, H = 560;
   svg.selectAll("*").remove();
   $("netnote").textContent = N.length
-    ? `${N.length} members linked by ${L.length} ties${cat ? " in " + cat : ""}. A tie joins a bill's author to each joint author and coauthor; thicker means more shared bills. Circle size is bills authored. Blue D, red R; dark outline marks senators. Drag to rearrange, scroll to zoom, click a member to filter the list.`
+    ? `${N.length} members linked by ${L.length} ties${cat ? " in " + cat : ""}. A tie joins a bill's author to each joint author and coauthor. Blue D, red R; dark outline marks senators. Drag anywhere to move the view, scroll or pinch to zoom. Tap a member for their bills. To move a member, double-tap and hold, then drag.`
     : "No shared bills among members for this selection yet.";
   if (!N.length) return;
   const g = svg.append("g");
-  svg.call(d3.zoom().scaleExtent([0.3, 6]).on("zoom", e => g.attr("transform", e.transform)));
-  const line = g.selectAll("line").data(L).join("line").attr("stroke", "#999").attr("stroke-opacity", 0.5).attr("stroke-width", d => Math.min(6, 0.6 + d.w * 0.7));
+  const line = g.selectAll("line").data(L).join("line").attr("stroke", "#999").attr("stroke-opacity", 0.5);
   const r = d => 4 + Math.sqrt(d.n) * 1.6;
-  const sel = d => dist && dist.chamber === d.m.chamber && dist.d === d.m.district;
-  const circ = g.selectAll("circle").data(N).join("circle").attr("r", r).style("cursor", "pointer")
-    .attr("fill", d => d.m.party === "D" ? "#2f6fb5" : d.m.party === "R" ? "#c0392b" : "#888")
-    .attr("stroke", d => sel(d) ? "#f5b301" : d.m.chamber === "Senate" ? "#111" : "#fff").attr("stroke-width", d => sel(d) ? 3 : d.m.chamber === "Senate" ? 2 : 1)
-    .on("click", (e, d) => { dist = sel(d) ? null : {chamber: d.m.chamber, d: d.m.district}; limit = 300; draw(); });
+  const circ = g.selectAll("circle").data(N).join("circle").style("cursor", "pointer")
+    .attr("fill", d => d.m.party === "D" ? "#2f6fb5" : d.m.party === "R" ? "#c0392b" : "#888");
   circ.append("title").text(d => `${d.m.name} (${d.m.party}) ${d.m.chamber} District ${d.m.district}\n${d.n} authored, ${d.deg} shared-bill ties`);
-  const lab = g.selectAll("text").data(N).join("text").text(d => d.m.family).attr("dx", d => r(d) + 2).attr("dy", 3);
+  const lab = g.selectAll("text").data(N).join("text").text(d => d.m.family);
+  // Semantic zoom: positions scale with the view, marks and labels stay near screen size,
+  // so zooming in pulls a crowded cluster apart instead of just magnifying the overlap.
+  const place = () => {
+    const k = netT.k, rs = d => r(d) / Math.pow(k, 0.65);
+    line.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+    circ.attr("cx", d => d.x).attr("cy", d => d.y);
+    lab.attr("x", d => d.x + rs(d) + 3 / k).attr("y", d => d.y + 3.5 / k);
+  };
+  netRestyle = () => {
+    const k = netT.k;
+    g.attr("transform", netT);
+    line.attr("stroke-width", d => Math.min(6, 0.6 + d.w * 0.7) / Math.pow(k, 0.8));
+    circ.attr("r", d => r(d) / Math.pow(k, 0.65))
+      .attr("stroke", d => d.m === selM ? "#f5b301" : d.m.chamber === "Senate" ? "#111" : "#fff")
+      .attr("stroke-width", d => (d.m === selM ? 3.5 : d.m.chamber === "Senate" ? 2 : 1) / k)
+      .attr("stroke-dasharray", d => d.fx != null ? `${3 / k} ${2 / k}` : null);
+    lab.style("font-size", 11 / k + "px")
+      .style("display", d => k >= 1.6 || d.m === selM || d.n >= (k < 0.8 ? 25 : k < 1.2 ? 8 : 3) ? null : "none");
+    place();
+  };
+  const zoom = d3.zoom().scaleExtent([0.3, 12]).on("zoom", e => { netT = e.transform; netRestyle(); });
+  svg.call(zoom).on("dblclick.zoom", null).call(zoom.transform, netT);
   const sim = d3.forceSimulation(N).alpha(Object.keys(netPos).length ? 0.3 : 1)
     .force("link", d3.forceLink(L).id(d => d.id).distance(45).strength(l => Math.min(1, 0.15 + l.w * 0.1)))
     .force("charge", d3.forceManyBody().strength(-90)).force("collide", d3.forceCollide().radius(d => r(d) + 3))
     .force("x", d3.forceX(W / 2).strength(0.06)).force("y", d3.forceY(H / 2).strength(0.08))
-    .on("tick", () => {
-      line.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-      circ.attr("cx", d => d.x).attr("cy", d => d.y); lab.attr("x", d => d.x).attr("y", d => d.y);
-      for (const d of N) netPos[d.id] = {x: d.x, y: d.y};
-    });
-  circ.call(d3.drag().on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; })
-    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; }).on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+    .on("tick", () => { place(); for (const d of N) netPos[d.id] = {x: d.x, y: d.y}; });
+  // A plain press on a member pans like anywhere else; only the second press of a double tap grabs the node.
+  circ.on("pointerdown", (e, d) => { const now = Date.now(); d.grab = lastDown.id === d.id && now - lastDown.t < 450; lastDown.id = d.id; lastDown.t = now; })
+    .on("click", (e, d) => { selM = selM === d.m ? null : d.m; netRestyle(); renderMember(); });
+  circ.call(d3.drag().filter((e, d) => d.grab)
+    .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; })
+    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); if (Math.hypot(e.x - d.x, e.y - d.y) < 1 && !d.moved) { d.fx = d.fy = null; } d.moved = false; netRestyle(); }));
+  netRestyle();
+}
+
+// --- member panel -------------------------------------------------------------------
+const SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#6250d6"], OTHER = "#a8a69e";
+function memberBills(m) {
+  const out = [];
+  for (const b of bills) {
+    if (b.chamber !== m.chamber) continue;
+    const au = (b.authors || []).map(a => matchAuthor(a, b.chamber)), co = (b.coauthors || []).map(a => matchAuthor(a, b.chamber));
+    const isAu = au.includes(m);
+    if (!isAu && !co.includes(m)) continue;
+    const others = new Set((isAu ? au.concat(co) : au).filter(x => x && x !== m));
+    out.push({b, role: isAu ? (au.length > 1 ? "joint author" : "author") : "coauthor", ties: others.size,
+      shared: (b.authors || []).length + (b.coauthors || []).length > 1});
+  }
+  return out;
+}
+function renderMember() {
+  const el = $("member");
+  el.hidden = !selM;
+  if (!selM) return;
+  const m = selM, mb = memberBills(m);
+  const num = (a, b) => a.b.type.localeCompare(b.b.type) || a.b.number - b.b.number;
+  const sorts = {ties: (a, b) => b.ties - a.ties || num(a, b), new: (a, b) => (b.b.filed || "").localeCompare(a.b.filed || "") || num(a, b),
+    num, cat: (a, b) => a.b.category.localeCompare(b.b.category) || num(a, b)};
+  const rows = mb.slice().sort(sorts[mSort]);
+  const opt = (v, t, cur) => `<option value="${v}"${v === cur ? " selected" : ""}>${t}</option>`;
+  el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
+      <div><b style="font-size:16px">${esc(m.name)}</b> <span class="small">(${esc(m.party)}) ${m.chamber} District ${m.district} · ${mb.length} bills, ${mb.filter(x => x.shared).length} with other signers</span></div>
+      <button id="mclose" style="font:inherit;border:0;background:none;color:var(--mut);cursor:pointer">✕ Close</button></div>
+    <div class="mgrid">
+      <div><h2>Bills adding most network ties</h2><div id="mtop"></div></div>
+      <div><h2 style="display:flex;justify-content:space-between;align-items:center">Bills filed per day
+        <select id="mmode" style="text-transform:none;letter-spacing:0;font-size:12.5px;padding:2px 6px">${opt("all", "All bills", mMode)}${opt("cat", "By category", mMode)}${opt("co", "By other signers", mMode)}</select></h2>
+        <div id="mday"></div><div id="mleg" class="small"></div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><h2 style="margin:0">All bills</h2>
+      <select id="msort" style="font-size:12.5px;padding:2px 6px">${opt("ties", "Most network ties", mSort)}${opt("new", "Newest filed", mSort)}${opt("num", "Bill number", mSort)}${opt("cat", "Category", mSort)}</select></div>
+    <div style="max-height:330px;overflow:auto"><table><thead><tr><th>Bill</th><th>Ties</th><th>Role</th><th>Caption</th><th>Category</th></tr></thead><tbody>${rows.map(x => `<tr>
+      <td class="id"><a href="https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${x.b.type}${x.b.number}" target="_blank" rel="noopener">${esc(x.b.id)}</a><div class="small">${esc(x.b.filed || "")}</div></td>
+      <td>${x.ties}</td><td class="small">${x.role}</td><td>${esc(x.b.caption || "(caption pending)")}</td><td><span class="tag">${esc(x.b.category)}</span></td></tr>`).join("")}</tbody></table></div>`;
+  $("mclose").onclick = () => { selM = null; netRestyle(); renderMember(); };
+  $("msort").onchange = e => { mSort = e.target.value; renderMember(); };
+  $("mmode").onchange = e => { mMode = e.target.value; renderMember(); };
+  const ink = getComputedStyle(document.body).getPropertyValue("--fg"), mut = getComputedStyle(document.body).getPropertyValue("--mut"), grid = getComputedStyle(document.body).getPropertyValue("--line");
+
+  // top bills by ties: horizontal bars, value labelled at the bar end
+  const top = mb.filter(x => x.ties > 0).sort(sorts.ties).slice(0, 10);
+  if (!top.length) $("mtop").innerHTML = '<div class="small">None of this member\'s bills has another signer yet.</div>';
+  else {
+    const W = $("mtop").clientWidth || 380, rh = 22, H = top.length * rh + 4, x = d3.scaleLinear([0, d3.max(top, d => d.ties)], [0, W - 110]);
+    const sv = d3.select("#mtop").append("svg").attr("width", W).attr("height", H);
+    const gr = sv.selectAll("g").data(top).join("g").attr("transform", (d, i) => `translate(0,${i * rh + 2})`);
+    gr.append("text").text(d => d.b.id).attr("x", 0).attr("y", 13).attr("fill", ink).style("font-size", "12px");
+    gr.append("rect").attr("x", 62).attr("y", 3).attr("height", 14).attr("rx", 3).attr("width", d => Math.max(2, x(d.ties))).attr("fill", SERIES[0]);
+    gr.append("text").text(d => d.ties).attr("x", d => 62 + Math.max(2, x(d.ties)) + 5).attr("y", 14).attr("fill", mut).style("font-size", "12px");
+    gr.append("title").text(d => `${d.b.id}: ${d.ties} other signer${d.ties === 1 ? "" : "s"} tied to ${m.family}\n${d.b.caption}`);
+  }
+
+  // filings per day, optionally stacked
+  const dated = mb.filter(x => x.b.filed);
+  let keyOf = () => "Bills", keys = ["Bills"];
+  if (mMode === "cat") {
+    const cnt = d3.rollups(dated, v => v.length, x => x.b.category).sort((a, b) => b[1] - a[1]);
+    const head = cnt.slice(0, SERIES.length).map(d => d[0]);
+    keys = cnt.length > head.length ? head.concat("Other") : head;
+    keyOf = x => head.includes(x.b.category) ? x.b.category : "Other";
+  } else if (mMode === "co") { keys = ["Sole author", "With joint authors or coauthors"]; keyOf = x => x.shared ? keys[1] : keys[0]; }
+  const color = k => k === "Other" ? OTHER : SERIES[keys.indexOf(k)];
+  const all = bills.map(b => b.filed).filter(Boolean).sort(), days = d3.timeDay.range(new Date(all[0] + "T00:00"), d3.timeDay.offset(new Date(all[all.length - 1] + "T00:00"), 1));
+  const fmt = d3.timeFormat("%Y-%m-%d"), by = d3.rollup(dated, v => d3.rollup(v, w => w.length, keyOf), x => x.b.filed);
+  const data = days.map(d => { const o = {day: fmt(d)}; for (const k of keys) o[k] = (by.get(o.day) || new Map()).get(k) || 0; return o; });
+  const W = $("mday").clientWidth || 380, H = 190, M = {l: 30, r: 6, t: 8, b: 22};
+  const x = d3.scaleBand(data.map(d => d.day), [M.l, W - M.r]).padding(0.25), bw = Math.min(x.bandwidth(), 46);
+  const y = d3.scaleLinear([0, d3.max(data, d => d3.sum(keys, k => d[k])) || 1], [H - M.b, M.t]).nice();
+  const sv = d3.select("#mday").append("svg").attr("width", W).attr("height", H);
+  const yt = y.ticks(4).filter(Number.isInteger);
+  sv.append("g").selectAll("line").data(yt).join("line").attr("x1", M.l).attr("x2", W - M.r).attr("y1", y).attr("y2", y).attr("stroke", grid);
+  sv.append("g").selectAll("text").data(yt).join("text").text(d => d).attr("x", M.l - 6).attr("y", d => y(d) + 4).attr("text-anchor", "end").attr("fill", mut).style("font-size", "11px");
+  const step = Math.ceil(data.length / Math.max(1, Math.floor((W - M.l) / 54)));
+  sv.append("g").selectAll("text").data(data.filter((d, i) => i % step === 0)).join("text").text(d => d3.timeFormat("%b %-d")(new Date(d.day + "T00:00")))
+    .attr("x", d => x(d.day) + x.bandwidth() / 2).attr("y", H - 6).attr("text-anchor", "middle").attr("fill", mut).style("font-size", "11px");
+  sv.append("g").selectAll("g").data(d3.stack().keys(keys)(data)).join("g").attr("fill", s => color(s.key))
+    .selectAll("rect").data(s => s.map(d => Object.assign(d, {key: s.key}))).join("rect")
+    .attr("x", d => x(d.data.day) + (x.bandwidth() - bw) / 2).attr("width", bw)
+    .attr("y", d => y(d[1])).attr("height", d => Math.max(0, y(d[0]) - y(d[1]) - (d[1] > d[0] ? 2 : 0)))
+    .append("title").text(d => `${d.data.day}\n${keys.length > 1 ? d.key + ": " : ""}${d.data[d.key]} bill${d.data[d.key] === 1 ? "" : "s"}`);
+  $("mleg").innerHTML = keys.length > 1 ? keys.map(k => `<span style="white-space:nowrap;margin-right:10px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color(k)};margin-right:4px"></i>${esc(k)}</span>`).join("") : "";
 }
 $("mapch").onclick = e => { const b = e.target.closest("button"); if (!b) return; mapCh = b.dataset.c;
   for (const x of $("mapch").children) x.classList.toggle("on", x === b);
