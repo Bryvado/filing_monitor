@@ -27,3 +27,10 @@ The classifier scores every bill against the taxonomy in `CATEGORIES` at the top
     python monitor.py --source tests/fixtures --out /tmp/out   # offline, synthetic fixtures
 
 The GitHub Action in `.github/workflows/monitor.yml` runs every 15 minutes and commits any changes. To see the dashboard, enable GitHub Pages for the `docs/` folder on `main`.
+
+## Map
+
+The dashboard's Map view shades House or Senate districts by the number of filings from each district's member, using MapLibre with OpenFreeMap tiles. A bill with several authors counts once for each author's district. Selecting a category on the left re-shades the map for that category, and clicking a district filters the list.
+
+- `docs/data/districts_house.geojson`, `districts_senate.geojson`: Census 2024 cartographic boundary files for Texas state legislative districts, simplified.
+- `docs/data/members.json`: district roster used to place authors. It is the Open States roster of sitting members with 14 members-elect from the November 2026 election added by hand. Update it when membership changes; any author it can't place is listed under the map.
