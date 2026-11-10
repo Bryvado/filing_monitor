@@ -42,3 +42,7 @@ The classifier has no labeled training set, so it is checked against the Legisla
 ## Coauthors and network
 
 The collector stores each bill's coauthors (and sponsors/cosponsors once bills cross chambers). The Map view has an "Include coauthors" checkbox that counts a bill for its coauthors' districts as well. The Network view links each bill's author to its joint authors and coauthors; it follows the category and search filters.
+
+## Look
+
+The dashboard is styled after the printed Texas bill: Courier (Courier Prime, OFL) for bill numbers, labels and row numbering, Verdana for reading text as on the Legislature's own filed-bills reports, and color only from the state flag (Pantone 281 and 193, Gov't Code 3100.002). Map shading uses tints of the flag blue. Explanations sit beside the thing they explain instead of in a central guide.

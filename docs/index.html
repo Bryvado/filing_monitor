@@ -8,132 +8,135 @@
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js"></script>
 <style>
-  /* Tokens follow Tailwind's stone neutrals with a single orange accent. */
-  :root { --bg:#fafaf9; --card:#fff; --fg:#1c1917; --mut:#78716c; --line:#e7e5e4; --acc:#c2410c; --bar:#ffedd5; --soft:#f5f5f4; }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#0c0a09; --card:#1c1917; --fg:#f5f5f4; --mut:#a8a29e; --line:#292524; --acc:#fb923c; --bar:#431407; --soft:#171412; }
-  }
+  /* Theme: the printed Texas bill. Courier for the documentary furniture (Legislative Council bill format);
+     Verdana for reading text (the face of the Legislature's own filed-bills reports);
+     color only from the state flag, Pantone 281 and 193 (Gov't Code 3100.002). */
+  @font-face { font-family:"Courier Prime"; src:url(fonts/courier-prime-latin-400-normal.woff2) format("woff2"); font-display:swap; }
+  @font-face { font-family:"Courier Prime"; font-weight:700; src:url(fonts/courier-prime-latin-700-normal.woff2) format("woff2"); font-display:swap; }
+  :root { color-scheme:light; --bg:#fff; --card:#fff; --fg:#111; --mut:#5c5c5c; --line:#cfcfcf; --acc:#000; --bar:#eef1f6; --soft:#f6f6f6;
+          --blue:#00205B; --red:#BF0A30; --mono:"Courier Prime","Courier New",Courier,monospace; --body:Verdana,"DejaVu Sans",Geneva,sans-serif; }
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width:1240px; margin:0 auto; padding:32px 20px 64px; }
-  a { color:var(--acc); text-decoration:none; } a:hover { text-decoration:underline; }
-  :focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
-  header h1 { font-size:28px; line-height:1.2; letter-spacing:-0.02em; margin:0; font-weight:650; }
-  header h1 span { font-size:13px; letter-spacing:0; font-weight:600; color:var(--acc); background:var(--bar); padding:2px 10px; border-radius:999px; vertical-align:middle; margin-left:8px; }
-  .lede { color:var(--mut); margin:6px 0 20px; max-width:70ch; }
-  .kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
-  .kpi { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 16px; }
-  .kpi b { display:block; font-size:24px; font-weight:650; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
-  .kpi span { color:var(--mut); font-size:13px; }
-  details.how { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:16px; font-size:14px; }
-  details.how summary { cursor:pointer; font-weight:600; }
-  details.how p, details.how ul { margin:8px 0 2px; color:var(--mut); max-width:80ch; }
-  details.how ul { padding-left:18px; } details.how li { margin:2px 0; } details.how b { color:var(--fg); font-weight:600; }
-  .grid { display:grid; grid-template-columns:300px 1fr; gap:24px; align-items:start; margin-top:8px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  h2 { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:0 0 8px; font-weight:600; }
-  .hint { font-size:12.5px; color:var(--mut); margin:-2px 0 10px; }
-  .cat { position:relative; display:flex; justify-content:space-between; gap:8px; width:100%; padding:5px 8px; margin:2px 0; border:0; background:none;
-         color:inherit; font:inherit; font-size:14px; text-align:left; cursor:pointer; border-radius:6px; font-variant-numeric:tabular-nums; }
-  .cat:hover { background:var(--soft); }
-  .cat i { position:absolute; inset:0 auto 0 0; background:var(--bar); border-radius:6px; z-index:0; }
-  .cat span { position:relative; z-index:1; }
-  .cat.on { outline:2px solid var(--acc); font-weight:600; }
-  .seg { display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--card); }
-  .seg button { font:inherit; font-weight:500; padding:7px 16px; border:0; background:none; color:var(--fg); cursor:pointer; }
-  .seg button + button { border-left:1px solid var(--line); }
-  .seg button.on { background:var(--acc); color:var(--bg); }
-  .bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; }
-  #viewhelp { color:var(--mut); font-size:14px; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.6 var(--body); }
+  main { max-width:1180px; margin:0 auto; padding:32px 32px 64px; }
+  a { color:var(--fg); text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; } a:hover { color:var(--blue); text-decoration-thickness:2px; }
+  :focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+  .mono, h2, th, .seg button, .cat, .chip, td.ln, td.id, .tp, summary, .kline, select, input, #count, .legend, svg text, #more { font-family:var(--mono); }
+  header .top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; font-family:var(--mono); font-size:15px; }
+  .mark { width:36px; height:54px; background:var(--blue); display:inline-block; vertical-align:top; margin-right:14px; flex:none; }
+  .kline { color:var(--mut); font-size:13px; }
+  .titleblock { text-align:center; font-family:var(--mono); margin:22px 0 4px; line-height:1.9; font-size:15px; }
+  .titleblock h1 { font-size:22px; letter-spacing:.05em; margin:0; font-weight:700; }
+  hr.rule { border:0; border-top:1px solid #000; margin:16px 0; }
+  details.how { border-left:3px solid #000; padding:2px 0 2px 14px; margin:0 0 16px; }
+  details.how summary { cursor:pointer; font-size:15px; text-transform:uppercase; letter-spacing:.03em; }
+  details.how summary:hover { color:var(--blue); }
+  details.how p, details.how ul { margin:8px 0 4px; color:#333; max-width:78ch; font-size:13.5px; }
+  details.how ul { padding-left:18px; } details.how b { font-weight:700; color:#000; }
+  .grid { display:grid; grid-template-columns:280px 1fr; gap:36px; align-items:start; }
+  .card { background:none; border:0; padding:0; }
+  aside .card + .card { border-top:1px solid #000; padding-top:16px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.03em; color:#000; margin:0 0 6px; font-weight:700; }
+  .hint { font-size:12px; color:var(--mut); margin:0 0 8px; }
+  .cat { display:flex; justify-content:space-between; gap:10px; width:100%; padding:4px 6px; margin:0; border:0; background:none; color:inherit; font-size:14.5px; text-align:left; cursor:pointer; line-height:1.35; }
+  .cat i { display:none; }
+  .cat:hover { background:var(--bar); }
+  .cat.on { background:#000; color:#fff; }
+  .seg { display:inline-flex; flex-wrap:wrap; gap:4px 22px; }
+  .seg button { font-size:15px; padding:3px 8px; border:0; background:none; color:#000; cursor:pointer; text-transform:uppercase; text-decoration:underline; text-underline-offset:3px; }
+  .seg button:hover { color:var(--blue); }
+  .seg button.on { background:#000; color:#fff; text-decoration:none; }
+  .bar { display:flex; flex-wrap:wrap; gap:10px 18px; align-items:center; margin-bottom:12px; }
+  #viewhelp { color:var(--mut); font-size:13px; }
   .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
-  input, select { font:inherit; font-size:14px; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
-  input[type=search] { flex:1; min-width:220px; } input[type=checkbox] { padding:0; }
-  .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px; background:var(--bar); font-size:13px; cursor:pointer; border:0; color:inherit; font-family:inherit; }
-  .chip.clear { background:none; color:var(--acc); padding-left:4px; }
-  #chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
+  input, select { font-size:14px; padding:7px 9px; border:1px solid #000; border-radius:0; background:#fff; color:#000; }
+  input[type=search] { flex:1; min-width:220px; } input[type=checkbox] { padding:0; accent-color:#000; }
+  #chips { display:flex; flex-wrap:wrap; gap:4px 14px; align-items:baseline; margin-bottom:10px; font-size:14px; }
+  .chip { border:0; background:none; padding:0; font-size:14px; cursor:pointer; color:#000; }
+  .chip:before { content:"["; } .chip:after { content:"]"; } .chip:hover { text-decoration:line-through; }
+  .chip.clear { text-decoration:underline; text-underline-offset:3px; } .chip.clear:before, .chip.clear:after { content:""; }
   table { width:100%; border-collapse:collapse; }
-  th { text-align:left; font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); padding:6px 8px; border-bottom:1px solid var(--line); font-weight:600; }
-  td { padding:12px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  td.id { white-space:nowrap; font-weight:600; width:150px; } td.topic { width:240px; }
-  .tag { display:inline-block; padding:2px 9px; border-radius:999px; background:var(--bar); font-size:12.5px; white-space:nowrap; margin-bottom:3px; }
-  .tag.sec { background:none; border:1px solid var(--line); color:var(--mut); }
-  .small { font-size:12.5px; color:var(--mut); font-weight:400; }
-  .new { color:var(--acc); font-size:10.5px; font-weight:700; margin-left:6px; letter-spacing:.04em; }
-  .empty { text-align:center; color:var(--mut); padding:36px 8px; }
-  #mapwrap, #netwrap { margin-bottom:20px; }
-  #map { height:540px; border:1px solid var(--line); border-radius:10px; }
-  .legend { display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--mut); }
-  .legend i { display:inline-block; width:120px; height:10px; border-radius:3px; background:linear-gradient(90deg,#fde0c5,#8c2d04); }
-  .legend b { display:inline-block; width:14px; height:10px; border-radius:3px; background:#cfcfcf; margin-left:8px; }
-  .maplibregl-popup-content { font:13px/1.4 system-ui, sans-serif; color:#1c1917; padding:10px 12px; border-radius:8px; }
-  .maplibregl-popup-content h4 { margin:0 0 2px; font-size:14px; }
-  #net { width:100%; height:560px; border:1px solid var(--line); border-radius:10px; background:var(--card); cursor:grab; touch-action:none; }
-  #net text { font-size:10px; fill:var(--fg); pointer-events:none; }
-  .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:12px; }
-  ul.ev { list-style:none; margin:0; padding:0; max-height:300px; overflow:auto; }
-  ul.ev li { padding:6px 0; border-bottom:1px solid var(--line); font-size:13px; }
+  th { text-align:left; font-size:13px; text-transform:uppercase; color:var(--mut); padding:4px 10px 4px 0; border-bottom:1px solid #000; font-weight:400; }
+  td { padding:11px 12px 11px 0; border-bottom:1px solid var(--line); vertical-align:top; }
+  #rows tr:hover { background:var(--soft); }
+  td.ln { width:46px; white-space:nowrap; color:var(--mut); font-size:14px; }
+  td.id { white-space:nowrap; width:168px; font-size:15px; } td.id a { font-weight:700; }
+  td.topic { width:230px; }
+  .tp { font-size:13px; text-transform:uppercase; letter-spacing:.02em; }
+  .tag { font-family:var(--mono); font-size:13px; text-transform:uppercase; letter-spacing:.02em; }
+  .tag.sec { text-transform:none; color:var(--mut); letter-spacing:0; } .tag.sec:before { content:"/ "; }
+  .small { font-size:12px; color:var(--mut); font-weight:400; font-family:var(--mono); letter-spacing:0; text-transform:none; }
+  .new { font-family:var(--mono); font-size:13px; font-weight:400; margin-left:8px; text-decoration:underline; text-underline-offset:3px; }
+  .empty { text-align:center; color:var(--mut); padding:36px 8px; font-family:var(--mono); }
+  #mapwrap, #netwrap { margin-bottom:22px; }
+  #map { height:540px; border:1px solid #000; }
+  .legend { display:flex; align-items:center; gap:6px; font-size:13px; color:#000; }
+  .legend i { display:inline-block; width:120px; height:10px; background:linear-gradient(90deg,#dfe5f0,#00205B); border:1px solid #000; }
+  .legend b { display:inline-block; width:14px; height:10px; background:#fff; border:1px solid #000; margin-left:8px; }
+  .maplibregl-popup-content { font:12.5px/1.5 var(--body); color:#111; padding:10px 12px; border-radius:0; border:1px solid #000; box-shadow:none; }
+  .maplibregl-popup-content h4 { margin:0 0 2px; font:700 14px var(--mono); }
+  #net { width:100%; height:560px; border:1px solid #000; background:#fff; cursor:grab; touch-action:none; }
+  #net text { fill:#000; pointer-events:none; paint-order:stroke; stroke:#fff; stroke-width:3px; stroke-linejoin:round; }
+  #netkey { position:absolute; left:10px; top:10px; width:230px; background:#fff; border:1px solid #000; padding:8px 10px; line-height:1.4; pointer-events:none; }
+  #netkey text { font-size:12px; stroke:none; }
+  #nethint { position:absolute; left:50%; bottom:12px; transform:translateX(-50%); background:#000; color:#fff; padding:5px 12px; white-space:nowrap; pointer-events:none; transition:opacity .4s; }
+  #netkey[hidden], #nethint[hidden] { display:none; }
+  details.why summary { cursor:pointer; list-style:none; text-decoration:underline dotted; text-underline-offset:3px; } details.why summary::-webkit-details-marker { display:none; }
+  details.why summary:hover { color:var(--blue); } details.why div { margin-top:3px; color:#333; }
+  td.id .small { white-space:normal; }
+  #member { border:1px solid #000; padding:16px; margin-top:12px; }
+  .mgrid { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:12px; }
+  ul.ev { list-style:none; margin:0; padding:0; max-height:300px; overflow:auto; font-family:var(--mono); }
+  ul.ev li { padding:5px 0; font-size:13.5px; line-height:1.45; } ul.ev s { text-decoration-thickness:1px; }
   #more[hidden] { display:none; }
-  #more { margin:16px auto; display:block; padding:8px 18px; cursor:pointer; font:inherit; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
-  footer { margin-top:40px; color:var(--mut); font-size:12.5px; }
-  @media (max-width:900px) {
-    .grid { grid-template-columns:1fr; } .kpis { grid-template-columns:repeat(2,1fr); } .mgrid { grid-template-columns:1fr; }
-    #cats { max-height:230px; overflow:auto; padding:3px; }
-  }
+  #more { margin:16px auto; display:block; padding:6px 16px; cursor:pointer; font-size:14px; border:1px solid #000; background:#fff; color:#000; text-transform:uppercase; }
+  #more:hover { background:#000; color:#fff; }
+  footer { margin-top:36px; padding-top:12px; border-top:1px solid #000; color:var(--mut); font-size:12px; font-family:var(--mono); }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr; gap:20px; } .mgrid { grid-template-columns:1fr; } #cats { max-height:210px; overflow:auto; border-bottom:1px solid var(--line); } }
   @media (max-width:640px) {
-    main { padding:20px 14px 48px; } thead { display:none; }
-    td { display:block; width:auto !important; border:0; padding:2px 0; } tr { display:block; padding:12px 0; border-bottom:1px solid var(--line); }
-    #map, #net { height:420px; }
+    main { padding:20px 16px 48px; } thead { display:none; } header .top { font-size:13px; } .titleblock h1 { font-size:19px; }
+    #rows td { display:block; width:auto !important; border:0; padding:1px 0; } #rows tr { display:block; padding:12px 0; border-bottom:1px solid var(--line); position:relative; }
+    #rows td.ln { position:absolute; right:0; top:12px; } #map, #net { height:420px; }
   }
 </style>
 </head>
 <body>
 <main>
   <header>
-    <h1>Texas Filing Monitor <span id="sess"></span></h1>
-    <p class="lede">Every bill filed for the next Texas legislative session, sorted by topic and updated through the day. Session convenes January 12, 2027; members have been able to file since November 9.</p>
+    <div class="top">
+      <div style="display:flex"><span class="mark"><svg width="36" height="54" viewBox="0 0 36 40" aria-hidden="true"><polygon fill="#fff" points="18.0,10.0 20.2,16.9 27.5,16.9 21.6,21.2 23.9,28.1 18.0,23.8 12.1,28.1 14.4,21.2 8.5,16.9 15.8,16.9"/></svg></span>
+        <div>By: Texas Legislature Online public files<div class="kline">Latest filing or text: <span id="k-upd">–</span></div><div class="kline" id="sub"></div></div></div>
+      <div style="text-align:right"><span id="sess"></span> FILINGS<div class="kline"><span id="k-total">–</span> filed · <span id="k-split">–</span> House / Senate</div><div class="kline"><span id="k-text">–</span> with full text posted</div><div class="kline">Session convenes Jan. 12, 2027.</div></div>
+    </div>
+    <div class="titleblock"><h1>TEXAS FILING MONITOR</h1>AN INDEX<br>relating to every bill filed for the 90th Legislature, sorted by topic.</div>
+    <hr class="rule">
   </header>
-  <div class="kpis">
-    <div class="kpi"><b id="k-total">–</b><span>bills and amendments filed</span></div>
-    <div class="kpi"><b id="k-split">–</b><span>House / Senate</span></div>
-    <div class="kpi"><b id="k-text">–</b><span>with full text posted</span></div>
-    <div class="kpi"><b id="k-upd">–</b><span id="sub">last new filing or text</span></div>
-  </div>
-  <details class="how">
-    <summary>New here? A 20-second guide</summary>
-    <ul>
-      <li><b>HB / SB</b> are House and Senate bills. <b>HJR / SJR</b> are proposed constitutional amendments, which voters must approve.</li>
-      <li>The <b>caption</b> is the bill's official one-sentence summary ("Relating to…"). The full text is usually posted within hours of filing.</li>
-      <li>The <b>author</b> is the member who filed the bill. <b>Coauthors</b> are members of the same chamber who sign on later.</li>
-      <li>Pick a <b>topic</b> on the left to filter everything. Use <b>Bills</b> to read them, <b>Map</b> to see where they come from, and <b>Network</b> to see who files together.</li>
-    </ul>
-  </details>
   <div class="grid">
     <aside>
-      <div class="card"><h2>Topics</h2><div class="hint">Click one to filter the list, map and network.</div><div id="cats"></div></div>
+      <div class="card"><h2>Topics</h2><div class="hint">A keyword scorer, not the Legislature, picks each topic from the bill's caption and text.</div><div id="cats"></div></div>
       <div class="card" style="margin-top:16px"><h2>Latest activity</h2><ul class="ev" id="events"></ul></div>
     </aside>
     <section>
       <div class="bar">
-        <div class="seg" id="view"><button data-v="list" class="on">Bills</button><button data-v="map">Map</button><button data-v="net">Network</button></div>
-        <span id="viewhelp"></span>
+        <div class="seg" id="view"><button data-v="list" class="on">Section 1. Bills</button><button data-v="map">Section 2. Map</button><button data-v="net">Section 3. Network</button></div>
       </div>
       <div id="mapwrap" hidden>
-        <details class="how"><summary>How the map is built</summary>
-          <p>A district's shade is the number of bills its member has filed as an author. A bill with several authors counts once for each of them. Authors are matched to districts by name using a member roster that includes those elected in November 2026. District lines come from the Census Bureau.</p></details>
         <div class="bar">
           <div class="seg" id="mapch"><button data-c="House" class="on">House</button><button data-c="Senate">Senate</button></div>
           <span class="legend"><span id="lmin">1</span><i></i><span id="lmax"></span><b></b>none</span>
-          <label class="small"><input type="checkbox" id="inclco"> Also count coauthors</label>
+          <label class="small"><input type="checkbox" id="inclco"> Also count bills the member signed onto as a coauthor.</label>
         </div>
         <div class="small" id="mapnote" style="margin-bottom:8px"></div>
         <div id="map"></div>
         <div class="small" id="unplaced" style="margin-top:6px"></div>
       </div>
       <div id="netwrap" hidden>
-        <details class="how"><summary>How the network is built</summary>
-          <p>A line joins two members who put their names on the same bill: the author with each joint author and coauthor. Thicker lines mean more shared bills, and bigger dots mean more bills authored. Few bills have coauthors this early, so expect it to fill in as session nears.</p></details>
         <div class="small" id="netnote" style="margin-bottom:8px"></div>
-        <svg id="net"></svg>
+        <div id="netbox" style="position:relative">
+          <svg id="net"></svg>
+          <div id="netkey" class="small"><svg width="150" height="62" aria-hidden="true"><circle cx="8" cy="9" r="5" fill="#00205B"/><rect x="21" y="4" width="10" height="10" fill="#00205B"/><text x="38" y="13">Democrat</text><circle cx="8" cy="29" r="5" fill="#BF0A30"/><rect x="21" y="24" width="10" height="10" fill="#BF0A30"/><text x="38" y="33">Republican</text><line x1="3" y1="50" x2="31" y2="50" stroke="#000" stroke-opacity=".5"/><text x="38" y="54">shared bill</text></svg>
+            <div>A line joins two members who signed the same bill; circles are House members and squares are senators.</div></div>
+          <div id="nethint" class="small">Drag to move, pinch or scroll to zoom, and tap a member for their bills.</div>
+        </div>
         <div id="member" class="card" style="margin-top:12px" hidden></div>
       </div>
       <div class="filters">
@@ -143,13 +146,11 @@
         <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="num">By bill number</option><option value="conf">Least certain topic first</option></select>
       </div>
       <div id="chips"><span class="small" id="count"></span><span id="distchip" style="display:contents"></span></div>
-      <details class="how"><summary>How topics are assigned</summary>
-        <p>Each bill gets one main topic from a keyword scorer; no AI model is involved. It weighs the caption most, then the words in the full text and which Texas law codes the bill amends. Until the text is posted, only the caption is used, and the bill is re-scored once it arrives. Against the Legislature's own subject labels the main topic agrees nearly 9 times in 10, so treat it as a guide and check the bill.</p></details>
-      <table><thead><tr><th>Bill</th><th>What it does</th><th>Topic</th></tr></thead><tbody id="rows"></tbody></table>
+      <table><thead><tr><th>Line</th><th>Bill</th><th>Caption<div class="small">Each bill states its subject in one sentence.</div></th><th>Topic</th></tr></thead><tbody id="rows"></tbody></table>
       <button id="more" hidden>Show more</button>
     </section>
   </div>
-  <footer>Source: Texas Legislature Online public files. Topics are automated and unofficial. Map tiles by OpenFreeMap, © OpenStreetMap contributors.</footer>
+  <footer>This site reads the Texas Legislature Online public files. <a href="https://github.com/Bryvado/filing_monitor#readme">See how this site works.</a> OpenFreeMap and OpenStreetMap contributors supply the map.</footer>
 </main>
 <script>
 const $ = id => document.getElementById(id);
@@ -181,21 +182,24 @@ Promise.all([get("bills.json"), get("meta.json"), get("changes.json").catch(() =
   bills = b; meta = m; members = mem;
   for (const x of bills) x.dists = [...new Set((x.authors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
   for (const x of bills) x.codists = [...new Set((x.coauthors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
-  $("sess").textContent = m.session;
+  $("sess").textContent = String(m.session).replace(/^(\d+)(\w)$/, "$1($2)");
   const nf = n => n.toLocaleString();
   $("k-total").textContent = nf(m.total);
   $("k-split").textContent = nf(bills.filter(x => x.chamber === "House").length) + " / " + nf(bills.filter(x => x.chamber === "Senate").length);
   $("k-text").textContent = nf(m.with_text);
   $("k-upd").textContent = fmt(m.last_change);
-  $("sub").textContent = "last new filing or text · checked " + fmt(m.checked);
+  $("sub").textContent = "Checked " + fmt(m.checked);
+  const byId = Object.fromEntries(bills.map(x => [x.id, x]));
   $("events").innerHTML = ev.slice(-150).reverse().map(e => {
-    const what = e.event === "new" ? `filed · ${esc(e.category)}`
-      : e.event === "text_posted" ? (e.was && e.was !== e.category ? `full text posted; topic changed from ${esc(e.was)} to ${esc(e.category)}` : `full text posted · ${esc(e.category)}`)
-      : `caption changed · ${esc(e.category)}`;
-    return `<li><b>${esc(e.bill)}</b> ${what} <span class="small">${fmt(e.ts)}</span></li>`;
+    const b = bid(e.bill);
+    const who = ((byId[e.bill] || {}).authors || [])[0];
+    const what = e.event === "new" ? `<u>${who ? esc(who) : "A member"} filed ${esc(b)}.</u>`
+      : e.event === "text_posted" ? `The Legislature posted the text of ${esc(b)}` + (e.was && e.was !== e.category ? `, and its topic moved from [<s>${esc(e.was)}</s>] to <u>${esc(e.category)}</u>.` : ".")
+      : `The Legislature changed the caption of ${esc(b)}.`;
+    return `<li>${what} <span class="small">${fmt(e.ts)}</span></li>`;
   }).join("") || "<li class='small'>Nothing yet.</li>";
   drawCats(); draw();
-}).catch(() => { $("rows").innerHTML = '<tr><td colspan="3" class="empty">No data yet. The first update has not run.</td></tr>'; });
+}).catch(() => { $("rows").innerHTML = '<tr><td colspan="4" class="empty">No data yet. The first update has not run.</td></tr>'; });
 
 function fmt(ts) { return ts ? new Date(ts).toLocaleString([], {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"}) : "never"; }
 
@@ -205,8 +209,9 @@ function drawCats() {
     `<button class="cat${c === cat ? " on" : ""}" data-c="${esc(c)}"><i style="width:${100 * n / max}%"></i><span>${esc(c)}</span><span>${n}</span></button>`).join("");
 }
 $("cats").onclick = e => { const b = e.target.closest(".cat"); if (!b) return; cat = cat === b.dataset.c ? "" : b.dataset.c; limit = 300; drawCats(); draw(); };
+const ABBR = {HB: 'H.B.', SB: 'S.B.', HJR: 'H.J.R.', SJR: 'S.J.R.', HCR: 'H.C.R.', SCR: 'S.C.R.', HR: 'H.R.', SR: 'S.R.'};
+const bid = id => { const [t, n] = String(id).split(' '); return (ABBR[t] || t) + ' No. ' + n; };
 const TYPES = {HB: "House Bill", SB: "Senate Bill", HJR: "House Joint Resolution", SJR: "Senate Joint Resolution", HCR: "House Concurrent Resolution", SCR: "Senate Concurrent Resolution", HR: "House Resolution", SR: "Senate Resolution"};
-const HELP = {list: "Read and search the bills.", map: "See which districts the bills come from.", net: "See which members file bills together."};
 const day = d => d ? new Date(d + "T12:00").toLocaleDateString([], {month: "short", day: "numeric"}) : "";
 const clean = t => t.replace(/\\b|\(\?:|[()?\\]|\.\{0,\d+\}/g, "").replace(/\|/g, "/");
 $("chips").onclick = e => { const c = e.target.closest("[data-clear]"); if (!c) return; const k = c.dataset.clear;
@@ -219,7 +224,6 @@ function draw() {
     (!cat || b.category === cat || (b.secondary || []).includes(cat)) && (!ba || b.basis === ba) &&
     (!q || (b.id + " " + b.id.replace(" ", "") + " " + b.caption + " " + (b.authors || []).join(" ")).toLowerCase().includes(q)));
   let r = base.filter(b => (!ch || b.chamber === ch) && (!dist || (b.chamber === dist.chamber && (b.dists.includes(dist.d) || (inclCo && b.codists.includes(dist.d))))));
-  $("viewhelp").textContent = HELP[view];
   const chips = [cat && `<button class="chip" data-clear="cat">Topic: ${esc(cat)} ✕</button>`,
     dist && `<button class="chip" data-clear="dist">${dist.chamber} District ${dist.d} ✕</button>`,
     q && `<button class="chip" data-clear="q">Search: “${esc(q)}” ✕</button>`].filter(Boolean);
@@ -232,21 +236,23 @@ function draw() {
     : (a, b) => (b.filed || b.first_seen || "").localeCompare(a.filed || a.first_seen || "") || num(a, b));
   $("count").textContent = r.length === bills.length ? `All ${r.length.toLocaleString()} bills` : `${r.length.toLocaleString()} of ${bills.length.toLocaleString()} bills`;
   const fresh = meta.last_change;
-  $("rows").innerHTML = r.slice(0, limit).map(b => {
+  $("rows").innerHTML = r.slice(0, limit).map((b, i) => {
     const hist = `https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${b.type}${b.number}`;
     const au = b.authors || [], c = b.confidence || 0;
     const sure = c >= 0.6 ? "Strong match" : c >= 0.35 ? "Likely match" : "Weak match";
     const why = (b.evidence || []).map(clean).join(", ");
     return `<tr>
-      <td class="id"><a href="${hist}" target="_blank" rel="noopener" title="Open on Texas Legislature Online">${esc(b.id)}</a>${b.first_seen === fresh ? '<span class="new">NEW</span>' : ""}
-        <div class="small">${TYPES[b.type] || ""}</div>
-        <div class="small">${au.length ? "by " + esc(au.slice(0, 2).join(", ")) + (au.length > 2 ? " +" + (au.length - 2) : "") : ""}</div></td>
-      <td>${esc(b.caption || "Caption not published yet. It usually appears within the hour.")}
-        <div class="small">${b.filed ? "Filed " + day(b.filed) + " · " : ""}${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">Read the bill text</a>` : "Full text not posted yet"}</div></td>
+      <td class="ln">${Math.floor(i / 24) + 1}-${i % 24 + 1}</td>
+      <td class="id"><a href="${hist}" target="_blank" rel="noopener" title="${TYPES[b.type] || ""} ${b.number}: open on Texas Legislature Online">${esc(bid(b.id))}</a>${b.first_seen === fresh ? '<span class="new">new</span>' : ""}
+        <div class="small">${au.length ? "By: " + esc(au.slice(0, 2).join(", ")) + (au.length > 2 ? " +" + (au.length - 2) : "") : ""}</div></td>
+      <td>${esc(b.caption || "The Legislature has not published this caption yet.")}
+        ${b.type.endsWith("JR") ? '<div class="small">Proposes a constitutional amendment, which voters must approve.</div>' : ""}
+        <div class="small">${b.filed ? "Filed " + day(b.filed) + " \u00a0 " : ""}${b.has_text ? `<a href="${esc(b.text_url)}" target="_blank" rel="noopener">Introduced text</a>` : "The Legislature hasn't posted the text yet, so the caption alone sets the topic."}</div></td>
       <td class="topic"><span class="tag">${esc(b.category)}</span> ${(b.secondary || []).map(x => `<span class="tag sec" title="Also touches on">${esc(x)}</span>`).join(" ")}
-        <div class="small" title="${why ? "Matched on: " + esc(why) : ""}">${b.category === "Uncategorized" ? "No topic matched" : sure + " · from " + (b.basis === "text" ? "full text" : "caption only")}</div></td>
+        ${b.category === "Uncategorized" ? '<div class="small">The scorer found no topic for this bill.</div>'
+          : `<details class="why small"><summary>${sure}</summary><div>${why ? "These terms set the topic: " + esc(why) + "." : ""}</div></details>`}</td>
     </tr>`;
-  }).join("") || '<tr><td colspan="3" class="empty">No bills match these filters. <button class="chip clear" data-clear="all" onclick="document.querySelector(\'#chips [data-clear=all]\')?.click()">Clear all</button></td></tr>';
+  }).join("") || '<tr><td colspan="4" class="empty">No bills match these filters, so clear one to see more. <button class="chip clear" data-clear="all" onclick="document.querySelector(\'#chips [data-clear=all]\')?.click()">Clear all</button></td></tr>';
   $("more").hidden = r.length <= limit;
 }
 // --- map ---------------------------------------------------------------------------
@@ -258,22 +264,22 @@ function drawMap(base) {
     for (const a of (b.authors || []).concat(inclCo ? b.coauthors || [] : [])) {
       const m = matchAuthor(a, b.chamber);
       if (!m) { unplaced[a] = (unplaced[a] || 0) + 1; continue; }
-      const s = stats[m.district] || (stats[m.district] = {n: 0, cats: {}, member: m});
-      s.n++; s.cats[b.category] = (s.cats[b.category] || 0) + 1;
+      const s = stats[m.district] || (stats[m.district] = {n: 0, joint: 0, cats: {}, member: m});
+      s.n++; if ((b.authors || []).length + (inclCo ? (b.coauthors || []).length : 0) > 1) s.joint++; s.cats[b.category] = (s.cats[b.category] || 0) + 1;
     }
   }
   const max = Math.max(2, ...Object.values(stats).map(s => s.n));
   $("lmax").textContent = max;
-  $("mapnote").textContent = (inclCo ? "Bills authored or coauthored, by district" : "Bills authored, by district") + (cat ? " in " + cat : "") + ". Hover for details; click a district to list its bills below.";
+  $("mapnote").textContent = (inclCo ? "The shading counts the bills each district's member has filed or coauthored" : "The shading counts the bills each district's member has filed") + (cat ? " in " + cat : "") + ". Click a district to list its bills.";
   const up = Object.entries(unplaced);
-  $("unplaced").textContent = up.length ? "Not placed on the map (author not matched to a district): " + up.map(([a, n]) => `${a} (${n})`).join(", ") : "";
+  $("unplaced").textContent = up.length ? "The roster could not place these authors: " + up.map(([a, n]) => `${a} (${n})`).join(", ") + "." : "";
   if (!map) return initMap();
   if (!mapReady) return;
   const show = g => {
     for (const f of g.features) f.properties.n = (stats[f.properties.d] || {n: 0}).n;
     map.getSource("dist").setData(g);
-    map.setPaintProperty("dist-fill", "fill-color", ["case", ["==", ["get", "n"], 0], "#cfcfcf",
-      ["interpolate", ["linear"], ["get", "n"], 1, "#fde0c5", max, "#8c2d04"]]);
+    map.setPaintProperty("dist-fill", "fill-color", ["case", ["==", ["get", "n"], 0], "#ffffff",
+      ["interpolate", ["linear"], ["get", "n"], 1, "#dfe5f0", max, "#00205B"]]);
     map.setFilter("dist-sel", ["==", ["get", "d"], dist && dist.chamber === mapCh ? dist.d : -1]);
   };
   const want = mapCh;
@@ -290,19 +296,22 @@ function initMap() {
     const firstLabel = (map.getStyle().layers.find(l => l.type === "symbol") || {}).id;
     map.addSource("dist", {type: "geojson", data: {type: "FeatureCollection", features: []}});
     map.addLayer({id: "dist-fill", type: "fill", source: "dist",
-      paint: {"fill-color": "#cfcfcf", "fill-opacity": ["case", ["==", ["get", "n"], 0], 0.3, 0.75]}}, firstLabel);
-    map.addLayer({id: "dist-line", type: "line", source: "dist", paint: {"line-color": "#5c5348", "line-width": 0.6}}, firstLabel);
-    map.addLayer({id: "dist-sel", type: "line", source: "dist", paint: {"line-color": "#111", "line-width": 2.5},
+      paint: {"fill-color": "#cfcfcf", "fill-opacity": ["case", ["==", ["get", "n"], 0], 0.55, 0.85]}}, firstLabel);
+    map.addLayer({id: "dist-line", type: "line", source: "dist", paint: {"line-color": "#000", "line-width": 0.5}}, firstLabel);
+    map.addLayer({id: "dist-sel", type: "line", source: "dist", paint: {"line-color": "#000", "line-width": 3},
       filter: ["==", ["get", "d"], -1]}, firstLabel);
     map.on("mousemove", "dist-fill", e => {
       const d = e.features[0].properties.d, s = stats[d];
       map.getCanvas().style.cursor = "pointer";
       let h = `<h4>${mapCh} District ${d}</h4>`;
+      const mem = s ? s.member : members.find(x => x.chamber === mapCh && x.district === d);
+      const who = mem ? `${esc(mem.name)} (${esc(mem.party)})` : "This district's member";
       if (s) {
         const top = Object.entries(s.cats).sort((a, b) => b[1] - a[1]).slice(0, 4);
-        h += `<div>${esc(s.member.name)} (${esc(s.member.party)})</div><div><b>${s.n}</b> filing${s.n === 1 ? "" : "s"}${cat ? " in " + esc(cat) : ""}</div>`
-          + (cat ? "" : `<div style="margin-top:4px;color:#555">${top.map(([c, n]) => `${esc(c)}: ${n}`).join("<br>")}</div>`);
-      } else h += `<div style="color:#555">No filings${cat ? " in " + esc(cat) : ""} yet</div>`;
+        h += `<div>${who} has filed <b>${s.n}</b> bill${s.n === 1 ? "" : "s"}${cat ? " in " + esc(cat) : ""}.</div>`
+          + (cat ? "" : `<div style="margin-top:4px;color:#555">${top.map(([c, n]) => `${esc(c)}: ${n}`).join("<br>")}</div>`)
+          + (s.joint ? `<div style="margin-top:4px;color:#555">${s.joint} of these bills ${s.joint === 1 ? "has" : "have"} joint authors, so ${s.joint === 1 ? "it also counts" : "they also count"} in those members' districts.</div>` : "");
+      } else h += `<div style="color:#555">${who} has filed no bills${cat ? " in " + esc(cat) : ""} yet.</div>`;
       popup.setLngLat(e.lngLat).setHTML(h).addTo(map);
     });
     map.on("mouseleave", "dist-fill", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
@@ -320,7 +329,7 @@ $("view").onclick = e => { const b = e.target.closest("button"); if (!b) return;
 $("inclco").onchange = e => { inclCo = e.target.checked; draw(); };
 
 // --- co-authorship network ---------------------------------------------------------
-let inclCo = false, netT = d3.zoomIdentity, selM = null, mSort = "ties", mMode = "all", netRestyle = () => {};
+let inclCo = false, netUser = false, netKey = null, netT = d3.zoomIdentity, selM = null, mSort = "ties", mMode = "all", netRestyle = () => {};
 const netPos = {}, lastDown = {id: null, t: 0};
 function drawNet(base) {
   const nodes = {}, links = {};
@@ -337,15 +346,16 @@ function drawNet(base) {
   const N = Object.values(nodes).filter(d => d.deg > 0);
   const svg = d3.select("#net"), W = svg.node().clientWidth || 800, H = 560;
   svg.selectAll("*").remove();
-  $("netnote").textContent = N.length
-    ? `${N.length} members linked by ${L.length} ties${cat ? " in " + cat : ""}. A tie joins a bill's author to each joint author and coauthor. Blue D, red R; dark outline marks senators. Drag anywhere to move the view, scroll or pinch to zoom. Tap a member for their bills. To move a member, double-tap and hold, then drag.`
-    : "No shared bills among members for this selection yet.";
+  const nco = bills.filter(b => (b.coauthors || []).length).length;
+  $("netnote").textContent = (N.length ? `${N.length} members share ${L.length} ties${cat ? " in " + cat : ""}.` : "No members share a bill in this selection yet.")
+    + (nco < 25 ? " Few members have signed onto each other's bills this early." : "");
+  $("netkey").hidden = $("nethint").hidden = !N.length;
   if (!N.length) return;
   const g = svg.append("g");
-  const line = g.selectAll("line").data(L).join("line").attr("stroke", "#999").attr("stroke-opacity", 0.5);
+  const line = g.selectAll("line").data(L).join("line").attr("stroke", "#000").attr("stroke-opacity", 0.13);
   const r = d => 4 + Math.sqrt(d.n) * 1.6;
-  const circ = g.selectAll("circle").data(N).join("circle").style("cursor", "pointer")
-    .attr("fill", d => d.m.party === "D" ? "#2f6fb5" : d.m.party === "R" ? "#c0392b" : "#888");
+  const circ = g.selectAll("path").data(N).join("path").style("cursor", "pointer")
+    .attr("fill", d => d.m.party === "D" ? "#00205B" : d.m.party === "R" ? "#BF0A30" : "#888");
   circ.append("title").text(d => `${d.m.name} (${d.m.party}) ${d.m.chamber} District ${d.m.district}\n${d.n} authored, ${d.deg} shared-bill ties`);
   const lab = g.selectAll("text").data(N).join("text").text(d => d.m.family);
   // Semantic zoom: positions scale with the view, marks and labels stay near screen size,
@@ -353,31 +363,44 @@ function drawNet(base) {
   const place = () => {
     const k = netT.k, rs = d => r(d) / Math.pow(k, 0.65);
     line.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-    circ.attr("cx", d => d.x).attr("cy", d => d.y);
+    circ.attr("transform", d => `translate(${d.x},${d.y})`);
     lab.attr("x", d => d.x + rs(d) + 3 / k).attr("y", d => d.y + 3.5 / k);
   };
   netRestyle = () => {
     const k = netT.k;
     g.attr("transform", netT);
     line.attr("stroke-width", d => Math.min(6, 0.6 + d.w * 0.7) / Math.pow(k, 0.8));
-    circ.attr("r", d => r(d) / Math.pow(k, 0.65))
-      .attr("stroke", d => d.m === selM ? "#f5b301" : d.m.chamber === "Senate" ? "#111" : "#fff")
-      .attr("stroke-width", d => (d.m === selM ? 3.5 : d.m.chamber === "Senate" ? 2 : 1) / k)
+    circ.attr("d", d => { const q = r(d) / Math.pow(k, 0.65); return d3.symbol(d.m.chamber === "Senate" ? d3.symbolSquare : d3.symbolCircle, Math.PI * q * q)(); })
+      .attr("stroke", d => d.m === selM ? "#000" : "#fff")
+      .attr("stroke-width", d => (d.m === selM ? 3.5 : 1) / k)
       .attr("stroke-dasharray", d => d.fx != null ? `${3 / k} ${2 / k}` : null);
     lab.style("font-size", 11 / k + "px")
-      .style("display", d => k >= 1.6 || d.m === selM || d.n >= (k < 0.8 ? 25 : k < 1.2 ? 8 : 3) ? null : "none");
+      .style("display", d => k >= 2.4 || d.m === selM || d.rank < (k < 1 ? 8 : k < 1.6 ? 14 : 30) ? null : "none");
     place();
   };
-  const zoom = d3.zoom().scaleExtent([0.3, 12]).on("zoom", e => { netT = e.transform; netRestyle(); });
-  svg.call(zoom).on("dblclick.zoom", null).call(zoom.transform, netT);
-  const sim = d3.forceSimulation(N).alpha(Object.keys(netPos).length ? 0.3 : 1)
-    .force("link", d3.forceLink(L).id(d => d.id).distance(45).strength(l => Math.min(1, 0.15 + l.w * 0.1)))
-    .force("charge", d3.forceManyBody().strength(-90)).force("collide", d3.forceCollide().radius(d => r(d) + 3))
+  N.slice().sort((a, b) => b.n - a.n).forEach((d, i) => d.rank = i);
+  const zoom = d3.zoom().scaleExtent([0.3, 12]).on("zoom", e => { netT = e.transform; if (e.sourceEvent) { netUser = true; $("nethint").style.opacity = 0; } netRestyle(); });
+  svg.call(zoom).on("dblclick.zoom", null);
+  const key = cat + "|" + $("q").value;
+  if (key !== netKey) { netKey = key; netUser = false; }
+  const fresh = !Object.keys(netPos).length;
+  const sim = d3.forceSimulation(N).alpha(fresh ? 1 : 0.3)
+    .force("link", d3.forceLink(L).id(d => d.id).distance(70).strength(l => Math.min(1, 0.15 + l.w * 0.1)))
+    .force("charge", d3.forceManyBody().strength(-220)).force("collide", d3.forceCollide().radius(d => r(d) + 3))
     .force("x", d3.forceX(W / 2).strength(0.06)).force("y", d3.forceY(H / 2).strength(0.08))
     .on("tick", () => { place(); for (const d of N) netPos[d.id] = {x: d.x, y: d.y}; });
+  // Settle the layout before drawing, then open zoomed to fit the members unless the reader has already moved the view.
+  sim.stop(); sim.tick(fresh ? 260 : 60);
+  if (!netUser) {
+    const xs = d3.extent(N, d => d.x), ys = d3.extent(N, d => d.y);
+    const k = Math.max(0.3, Math.min(4, (W - 120) / Math.max(40, xs[1] - xs[0]), (H - 100) / Math.max(40, ys[1] - ys[0])));
+    netT = d3.zoomIdentity.translate(W / 2, H / 2).scale(k).translate(-(xs[0] + xs[1]) / 2, -(ys[0] + ys[1]) / 2);
+  }
+  svg.call(zoom.transform, netT);
+  sim.alpha(0.05).restart();
   // A plain press on a member pans like anywhere else; only the second press of a double tap grabs the node.
   circ.on("pointerdown", (e, d) => { const now = Date.now(); d.grab = lastDown.id === d.id && now - lastDown.t < 450; lastDown.id = d.id; lastDown.t = now; })
-    .on("click", (e, d) => { selM = selM === d.m ? null : d.m; netRestyle(); renderMember(); });
+    .on("click", (e, d) => { selM = selM === d.m ? null : d.m; $("nethint").style.opacity = 0; netRestyle(); renderMember(); });
   circ.call(d3.drag().filter((e, d) => d.grab)
     .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; })
     .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
@@ -386,7 +409,8 @@ function drawNet(base) {
 }
 
 // --- member panel -------------------------------------------------------------------
-const SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#6250d6"], OTHER = "#a8a69e";
+// stacked segments are tints of flag blue, darkest for the largest group; "Other" is paper with an outline
+const SERIES = ["#00205B", "#3d5687", "#7d8fb2", "#bcc6d9"], OTHER = "#ffffff";
 function memberBills(m) {
   const out = [];
   for (const b of bills) {
@@ -411,18 +435,18 @@ function renderMember() {
   const rows = mb.slice().sort(sorts[mSort]);
   const opt = (v, t, cur) => `<option value="${v}"${v === cur ? " selected" : ""}>${t}</option>`;
   el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">
-      <div><b style="font-size:16px">${esc(m.name)}</b> <span class="small">(${esc(m.party)}) ${m.chamber} District ${m.district} · ${mb.length} bills, ${mb.filter(x => x.shared).length} with other signers</span></div>
-      <button id="mclose" style="font:inherit;border:0;background:none;color:var(--mut);cursor:pointer">✕ Close</button></div>
+      <div><b class="mono" style="font-size:16px">By: ${esc(m.name)}</b> <span class="small">(${esc(m.party)}) ${m.chamber} District ${m.district} · ${mb.length} bills, ${mb.filter(x => x.shared).length} with other signers</span></div>
+      <button id="mclose" class="chip">close</button></div>
     <div class="mgrid">
-      <div><h2>Bills adding most network ties</h2><div id="mtop"></div></div>
-      <div><h2 style="display:flex;justify-content:space-between;align-items:center">Bills filed per day
+      <div><h2>Bills that tie ${esc(m.family)} to the most members</h2><div id="mtop"></div></div>
+      <div><h2 style="display:flex;justify-content:space-between;align-items:center">Bills ${esc(m.family)} filed each day
         <select id="mmode" style="text-transform:none;letter-spacing:0;font-size:12.5px;padding:2px 6px">${opt("all", "All bills", mMode)}${opt("cat", "By category", mMode)}${opt("co", "By other signers", mMode)}</select></h2>
         <div id="mday"></div><div id="mleg" class="small"></div></div>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><h2 style="margin:0">All bills</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px"><h2 style="margin:0">Every bill ${esc(m.family)} signed</h2>
       <select id="msort" style="font-size:12.5px;padding:2px 6px">${opt("ties", "Most network ties", mSort)}${opt("new", "Newest filed", mSort)}${opt("num", "Bill number", mSort)}${opt("cat", "Category", mSort)}</select></div>
     <div style="max-height:330px;overflow:auto"><table><thead><tr><th>Bill</th><th>Ties</th><th>Role</th><th>Caption</th><th>Category</th></tr></thead><tbody>${rows.map(x => `<tr>
-      <td class="id"><a href="https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${x.b.type}${x.b.number}" target="_blank" rel="noopener">${esc(x.b.id)}</a><div class="small">${esc(x.b.filed || "")}</div></td>
+      <td class="id"><a href="https://capitol.texas.gov/BillLookup/History.aspx?LegSess=${encodeURIComponent(meta.session)}&Bill=${x.b.type}${x.b.number}" target="_blank" rel="noopener">${esc(bid(x.b.id))}</a><div class="small">${esc(x.b.filed || "")}</div></td>
       <td>${x.ties}</td><td class="small">${x.role}</td><td>${esc(x.b.caption || "(caption pending)")}</td><td><span class="tag">${esc(x.b.category)}</span></td></tr>`).join("")}</tbody></table></div>`;
   $("mclose").onclick = () => { selM = null; netRestyle(); renderMember(); };
   $("msort").onchange = e => { mSort = e.target.value; renderMember(); };
@@ -431,14 +455,14 @@ function renderMember() {
 
   // top bills by ties: horizontal bars, value labelled at the bar end
   const top = mb.filter(x => x.ties > 0).sort(sorts.ties).slice(0, 10);
-  if (!top.length) $("mtop").innerHTML = '<div class="small">None of this member\'s bills has another signer yet.</div>';
+  if (!top.length) $("mtop").innerHTML = '<div class="small">No other member has signed these bills yet.</div>';
   else {
-    const W = $("mtop").clientWidth || 380, rh = 22, H = top.length * rh + 4, x = d3.scaleLinear([0, d3.max(top, d => d.ties)], [0, W - 110]);
+    const W = $("mtop").clientWidth || 380, rh = 22, H = top.length * rh + 4, x = d3.scaleLinear([0, d3.max(top, d => d.ties)], [0, W - 150]);
     const sv = d3.select("#mtop").append("svg").attr("width", W).attr("height", H);
     const gr = sv.selectAll("g").data(top).join("g").attr("transform", (d, i) => `translate(0,${i * rh + 2})`);
-    gr.append("text").text(d => d.b.id).attr("x", 0).attr("y", 13).attr("fill", ink).style("font-size", "12px");
-    gr.append("rect").attr("x", 62).attr("y", 3).attr("height", 14).attr("rx", 3).attr("width", d => Math.max(2, x(d.ties))).attr("fill", SERIES[0]);
-    gr.append("text").text(d => d.ties).attr("x", d => 62 + Math.max(2, x(d.ties)) + 5).attr("y", 14).attr("fill", mut).style("font-size", "12px");
+    gr.append("text").text(d => bid(d.b.id)).attr("x", 0).attr("y", 13).attr("fill", ink).style("font-size", "12px");
+    gr.append("rect").attr("x", 112).attr("y", 4).attr("height", 12).attr("width", d => Math.max(2, x(d.ties))).attr("fill", "#000");
+    gr.append("text").text(d => d.ties).attr("x", d => 112 + Math.max(2, x(d.ties)) + 6).attr("y", 14).attr("fill", mut).style("font-size", "12px");
     gr.append("title").text(d => `${d.b.id}: ${d.ties} other signer${d.ties === 1 ? "" : "s"} tied to ${m.family}\n${d.b.caption}`);
   }
 
@@ -450,8 +474,8 @@ function renderMember() {
     const head = cnt.slice(0, SERIES.length).map(d => d[0]);
     keys = cnt.length > head.length ? head.concat("Other") : head;
     keyOf = x => head.includes(x.b.category) ? x.b.category : "Other";
-  } else if (mMode === "co") { keys = ["Sole author", "With joint authors or coauthors"]; keyOf = x => x.shared ? keys[1] : keys[0]; }
-  const color = k => k === "Other" ? OTHER : SERIES[keys.indexOf(k)];
+  } else if (mMode === "co") { keys = ["With joint authors or coauthors", "Sole author"]; keyOf = x => x.shared ? keys[0] : keys[1]; }
+  const color = k => k === "Other" ? OTHER : keys.length === 1 ? "#000" : mMode === "co" ? [SERIES[0], SERIES[3]][keys.indexOf(k)] : SERIES[keys.indexOf(k)];
   const all = bills.map(b => b.filed).filter(Boolean).sort(), days = d3.timeDay.range(new Date(all[0] + "T00:00"), d3.timeDay.offset(new Date(all[all.length - 1] + "T00:00"), 1));
   const fmt = d3.timeFormat("%Y-%m-%d"), by = d3.rollup(dated, v => d3.rollup(v, w => w.length, keyOf), x => x.b.filed);
   const data = days.map(d => { const o = {day: fmt(d)}; for (const k of keys) o[k] = (by.get(o.day) || new Map()).get(k) || 0; return o; });
@@ -465,12 +489,12 @@ function renderMember() {
   const step = Math.ceil(data.length / Math.max(1, Math.floor((W - M.l) / 54)));
   sv.append("g").selectAll("text").data(data.filter((d, i) => i % step === 0)).join("text").text(d => d3.timeFormat("%b %-d")(new Date(d.day + "T00:00")))
     .attr("x", d => x(d.day) + x.bandwidth() / 2).attr("y", H - 6).attr("text-anchor", "middle").attr("fill", mut).style("font-size", "11px");
-  sv.append("g").selectAll("g").data(d3.stack().keys(keys)(data)).join("g").attr("fill", s => color(s.key))
+  sv.append("g").selectAll("g").data(d3.stack().keys(keys)(data)).join("g").attr("fill", s => color(s.key)).attr("stroke", "#000").attr("stroke-width", 0.75)
     .selectAll("rect").data(s => s.map(d => Object.assign(d, {key: s.key}))).join("rect")
     .attr("x", d => x(d.data.day) + (x.bandwidth() - bw) / 2).attr("width", bw)
     .attr("y", d => y(d[1])).attr("height", d => Math.max(0, y(d[0]) - y(d[1]) - (d[1] > d[0] ? 2 : 0)))
     .append("title").text(d => `${d.data.day}\n${keys.length > 1 ? d.key + ": " : ""}${d.data[d.key]} bill${d.data[d.key] === 1 ? "" : "s"}`);
-  $("mleg").innerHTML = keys.length > 1 ? keys.map(k => `<span style="white-space:nowrap;margin-right:10px"><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${color(k)};margin-right:4px"></i>${esc(k)}</span>`).join("") : "";
+  $("mleg").innerHTML = keys.length > 1 ? keys.map(k => `<span style="white-space:nowrap;margin-right:10px"><i style="display:inline-block;width:10px;height:10px;border:1px solid #000;background:${color(k)};margin-right:4px"></i>${esc(k)}</span>`).join("") : "";
 }
 $("mapch").onclick = e => { const b = e.target.closest("button"); if (!b) return; mapCh = b.dataset.c;
   for (const x of $("mapch").children) x.classList.toggle("on", x === b);
