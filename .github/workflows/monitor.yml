@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: "4,19,34,49 * * * *"   # every 15 minutes
   workflow_dispatch:
+    inputs:
+      export_text:
+        description: "Attach the cached bill text to this run as an artifact (for offline classifier testing)"
+        type: boolean
+        default: false
 permissions:
   contents: write
 concurrency:
@@ -23,6 +28,13 @@ jobs:
           key: text-${{ github.run_id }}
           restore-keys: text-
       - run: python -u monitor.py
+      - if: ${{ inputs.export_text }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bill-text
+          path: .cache
+          include-hidden-files: true
+          retention-days: 3
       - name: Commit data
         run: |
           git config user.name "filing-monitor"
