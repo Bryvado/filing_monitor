@@ -6,6 +6,7 @@
 <title>Texas Filing Monitor</title>
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
 <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js"></script>
 <style>
   :root { --bg:#fbfbf9; --fg:#1c1c1a; --mut:#6b6b66; --line:#e2e1dc; --card:#fff; --acc:#9a3412; --bar:#e8d5c8; }
   @media (prefers-color-scheme: dark) {
@@ -50,6 +51,9 @@
   .chip { display:inline-block; padding:3px 10px; border-radius:12px; background:var(--bar); font-size:13px; cursor:pointer; }
   .maplibregl-popup-content { font:13px/1.4 system-ui, sans-serif; color:#1c1c1a; padding:10px 12px; }
   .maplibregl-popup-content h4 { margin:0 0 2px; font-size:14px; }
+  #net { width:100%; height:560px; border:1px solid var(--line); border-radius:8px; background:var(--card); cursor:grab; }
+  #net text { font-size:10px; fill:var(--fg); pointer-events:none; }
+  #netwrap { margin-bottom:16px; }
   #more[hidden] { display:none; }
   #more { margin:14px auto; display:block; padding:8px 16px; cursor:pointer; }
   ul.ev { list-style:none; margin:0; padding:0; max-height:320px; overflow:auto; }
@@ -67,17 +71,22 @@
     </aside>
     <section>
       <div class="bar">
-        <div class="seg" id="view"><button data-v="list" class="on">List</button><button data-v="map">Map</button></div>
+        <div class="seg" id="view"><button data-v="list" class="on">List</button><button data-v="map">Map</button><button data-v="net">Network</button></div>
         <span id="distchip"></span>
       </div>
       <div id="mapwrap" hidden>
         <div class="bar">
           <div class="seg" id="mapch"><button data-c="House" class="on">House</button><button data-c="Senate">Senate</button></div>
           <span class="legend"><span id="lmin">1</span><i></i><span id="lmax"></span><b></b>none</span>
+          <label class="small"><input type="checkbox" id="inclco"> Include coauthors</label>
           <span class="small" id="mapnote"></span>
         </div>
         <div id="map"></div>
         <div class="small" id="unplaced" style="margin-top:6px"></div>
+      </div>
+      <div id="netwrap" hidden>
+        <div class="small" id="netnote" style="margin-bottom:6px"></div>
+        <svg id="net"></svg>
       </div>
       <div class="filters">
         <input type="search" id="q" placeholder="Search bill number, caption, author…">
@@ -120,6 +129,7 @@ const get = f => fetch("data/" + f, {cache: "no-store"}).then(r => r.ok ? r.json
 Promise.all([get("bills.json"), get("meta.json"), get("changes.json").catch(() => []), get("members.json").catch(() => [])]).then(([b, m, ev, mem]) => {
   bills = b; meta = m; members = mem;
   for (const x of bills) x.dists = [...new Set((x.authors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
+  for (const x of bills) x.codists = [...new Set((x.coauthors || []).map(a => matchAuthor(a, x.chamber)).filter(Boolean).map(mm => mm.district))];
   $("sess").textContent = m.session;
   $("sub").textContent = `${m.total} filings tracked, ${m.with_text} with text posted. Last change ${fmt(m.last_change)}; checked ${fmt(m.checked)}.`;
   $("events").innerHTML = ev.slice(-150).reverse().map(e => {
@@ -145,9 +155,10 @@ function draw() {
   const base = bills.filter(b =>
     (!cat || b.category === cat || (b.secondary || []).includes(cat)) && (!ba || b.basis === ba) &&
     (!q || (b.id + " " + b.id.replace(" ", "") + " " + b.caption + " " + (b.authors || []).join(" ")).toLowerCase().includes(q)));
-  let r = base.filter(b => (!ch || b.chamber === ch) && (!dist || (b.chamber === dist.chamber && b.dists.includes(dist.d))));
+  let r = base.filter(b => (!ch || b.chamber === ch) && (!dist || (b.chamber === dist.chamber && (b.dists.includes(dist.d) || (inclCo && b.codists.includes(dist.d))))));
   $("distchip").innerHTML = dist ? `<span class="chip" title="Clear district filter">${dist.chamber} District ${dist.d} ✕</span>` : "";
   if (view === "map") drawMap(base);
+  if (view === "net") drawNet(base);
   const num = (a, b) => a.type.localeCompare(b.type) || a.number - b.number;
   r.sort(so === "num" ? num
     : so === "conf" ? (a, b) => a.confidence - b.confidence || num(a, b)
@@ -174,7 +185,7 @@ function drawMap(base) {
   const unplaced = {};
   for (const b of base) {
     if (b.chamber !== mapCh) continue;
-    for (const a of b.authors || []) {
+    for (const a of (b.authors || []).concat(inclCo ? b.coauthors || [] : [])) {
       const m = matchAuthor(a, b.chamber);
       if (!m) { unplaced[a] = (unplaced[a] || 0) + 1; continue; }
       const s = stats[m.district] || (stats[m.district] = {n: 0, cats: {}, member: m});
@@ -183,7 +194,7 @@ function drawMap(base) {
   }
   const max = Math.max(2, ...Object.values(stats).map(s => s.n));
   $("lmax").textContent = max;
-  $("mapnote").textContent = "Filings per district" + (cat ? " in " + cat : "") + ". Click a district to filter the list.";
+  $("mapnote").textContent = (inclCo ? "Filings authored or coauthored per district" : "Filings authored per district") + (cat ? " in " + cat : "") + ". Click a district to filter the list.";
   const up = Object.entries(unplaced);
   $("unplaced").textContent = up.length ? "Not placed on the map (author not matched to a district): " + up.map(([a, n]) => `${a} (${n})`).join(", ") : "";
   if (!map) return initMap();
@@ -235,7 +246,53 @@ function initMap() {
 }
 $("view").onclick = e => { const b = e.target.closest("button"); if (!b) return; view = b.dataset.v;
   for (const x of $("view").children) x.classList.toggle("on", x === b);
-  $("mapwrap").hidden = view !== "map"; draw(); if (map) map.resize(); };
+  $("mapwrap").hidden = view !== "map"; $("netwrap").hidden = view !== "net"; draw(); if (map) map.resize(); };
+$("inclco").onchange = e => { inclCo = e.target.checked; draw(); };
+
+// --- co-authorship network ---------------------------------------------------------
+let inclCo = false; const netPos = {};
+function drawNet(base) {
+  const nodes = {}, links = {};
+  const node = m => nodes[m.chamber + m.district] || (nodes[m.chamber + m.district] = Object.assign({id: m.chamber + m.district, m, n: 0, deg: 0}, netPos[m.chamber + m.district]));
+  const pair = (x, y) => { const a = node(x), b = node(y); if (a === b) return;
+    const k = [a.id, b.id].sort().join("~"); (links[k] || (links[k] = {source: a.id, target: b.id, w: 0})).w++; };
+  for (const b of base) {
+    const au = (b.authors || []).map(a => matchAuthor(a, b.chamber)).filter(Boolean);
+    const co = (b.coauthors || []).map(a => matchAuthor(a, b.chamber)).filter(Boolean);
+    au.forEach((x, i) => { node(x).n++; au.slice(i + 1).forEach(y => pair(x, y)); co.forEach(y => pair(x, y)); });
+  }
+  const L = Object.values(links);
+  for (const l of L) { nodes[l.source].deg += l.w; nodes[l.target].deg += l.w; }
+  const N = Object.values(nodes).filter(d => d.deg > 0);
+  const svg = d3.select("#net"), W = svg.node().clientWidth || 800, H = 560;
+  svg.selectAll("*").remove();
+  $("netnote").textContent = N.length
+    ? `${N.length} members linked by ${L.length} ties${cat ? " in " + cat : ""}. A tie joins a bill's author to each joint author and coauthor; thicker means more shared bills. Circle size is bills authored. Blue D, red R; dark outline marks senators. Drag to rearrange, scroll to zoom, click a member to filter the list.`
+    : "No shared bills among members for this selection yet.";
+  if (!N.length) return;
+  const g = svg.append("g");
+  svg.call(d3.zoom().scaleExtent([0.3, 6]).on("zoom", e => g.attr("transform", e.transform)));
+  const line = g.selectAll("line").data(L).join("line").attr("stroke", "#999").attr("stroke-opacity", 0.5).attr("stroke-width", d => Math.min(6, 0.6 + d.w * 0.7));
+  const r = d => 4 + Math.sqrt(d.n) * 1.6;
+  const sel = d => dist && dist.chamber === d.m.chamber && dist.d === d.m.district;
+  const circ = g.selectAll("circle").data(N).join("circle").attr("r", r).style("cursor", "pointer")
+    .attr("fill", d => d.m.party === "D" ? "#2f6fb5" : d.m.party === "R" ? "#c0392b" : "#888")
+    .attr("stroke", d => sel(d) ? "#f5b301" : d.m.chamber === "Senate" ? "#111" : "#fff").attr("stroke-width", d => sel(d) ? 3 : d.m.chamber === "Senate" ? 2 : 1)
+    .on("click", (e, d) => { dist = sel(d) ? null : {chamber: d.m.chamber, d: d.m.district}; limit = 300; draw(); });
+  circ.append("title").text(d => `${d.m.name} (${d.m.party}) ${d.m.chamber} District ${d.m.district}\n${d.n} authored, ${d.deg} shared-bill ties`);
+  const lab = g.selectAll("text").data(N).join("text").text(d => d.m.family).attr("dx", d => r(d) + 2).attr("dy", 3);
+  const sim = d3.forceSimulation(N).alpha(Object.keys(netPos).length ? 0.3 : 1)
+    .force("link", d3.forceLink(L).id(d => d.id).distance(45).strength(l => Math.min(1, 0.15 + l.w * 0.1)))
+    .force("charge", d3.forceManyBody().strength(-90)).force("collide", d3.forceCollide().radius(d => r(d) + 3))
+    .force("x", d3.forceX(W / 2).strength(0.06)).force("y", d3.forceY(H / 2).strength(0.08))
+    .on("tick", () => {
+      line.attr("x1", d => d.source.x).attr("y1", d => d.source.y).attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+      circ.attr("cx", d => d.x).attr("cy", d => d.y); lab.attr("x", d => d.x).attr("y", d => d.y);
+      for (const d of N) netPos[d.id] = {x: d.x, y: d.y};
+    });
+  circ.call(d3.drag().on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.2).restart(); d.fx = d.x; d.fy = d.y; })
+    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; }).on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+}
 $("mapch").onclick = e => { const b = e.target.closest("button"); if (!b) return; mapCh = b.dataset.c;
   for (const x of $("mapch").children) x.classList.toggle("on", x === b);
   if (dist && dist.chamber !== mapCh) dist = null; if (popup) popup.remove(); draw(); };

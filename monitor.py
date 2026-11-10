@@ -645,6 +645,7 @@ def parse_history(raw):
     root = ET.fromstring(raw)
     cap = root.find("caption")
     authors = [a.strip() for a in re.split(r"\s*\|\s*", root.findtext("authors") or "") if a.strip()]
+    names = lambda tag: [a.strip() for a in re.split(r"\s*\|\s*", root.findtext(tag) or "") if a.strip()]
     subjects = [re.sub(r"\s*\([A-Z]\d+\)\s*$", "", (s.text or "").strip())
                 for s in root.iter("subject") if (s.text or "").strip()]
     actions = []
@@ -660,6 +661,9 @@ def parse_history(raw):
     return {
         "caption": re.sub(r"\s+", " ", (cap.text or "").strip()) if cap is not None else "",
         "authors": authors,
+        "coauthors": names("coauthors"),      # same-chamber members who signed on
+        "sponsors": names("sponsors"),        # other-chamber sponsors, once a bill crosses over
+        "cosponsors": names("cosponsors"),
         "tlo_subjects": subjects,
         "filed": filed,
         "last_action": actions[-1][1] if actions else "",
@@ -792,7 +796,7 @@ def main():
         had_text, old_cat, old_caption = rec["has_text"], rec.get("category"), rec["caption"]
         dirty, body = is_new, None
         try:
-            if key in hist and hist[key][1] != rec["hist_sig"]:
+            if key in hist and (hist[key][1] != rec["hist_sig"] or "coauthors" not in rec):
                 rec.update(parse_history(src.read(hist[key][0])))
                 rec["hist_sig"] = hist[key][1]
                 dirty = True

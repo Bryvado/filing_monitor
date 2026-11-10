@@ -38,3 +38,7 @@ The dashboard's Map view shades House or Senate districts by the number of filin
 ## Classifier accuracy
 
 The classifier has no labeled training set, so it is checked against the Legislative Reference Library's own subject headings (TLO subjects), which most bills carry once indexed. A bill counts as a match when its primary category corresponds to any of its TLO subjects. In the last check (about 1,050 bills): 89.7% from full text, 87.0% from caption alone, with 11 captions left uncategorized. This agreement is lenient and approximate, since the two taxonomies don't map one-to-one, so use it to compare versions of the classifier rather than as an absolute accuracy figure.
+
+## Coauthors and network
+
+The collector stores each bill's coauthors (and sponsors/cosponsors once bills cross chambers). The Map view has an "Include coauthors" checkbox that counts a bill for its coauthors' districts as well. The Network view links each bill's author to its joint authors and coauthors; it follows the category and search filters.
