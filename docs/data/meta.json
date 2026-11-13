@@ -1,13 +1,13 @@
 {
  "session": "90R",
- "total": 1418,
- "with_text": 1315,
+ "total": 1420,
+ "with_text": 1317,
  "by_category": {
   "Criminal Justice & Public Safety": 190,
   "Health Care": 167,
   "Public Education": 164,
+  "Elections & Voting": 79,
   "State Government & Ethics": 78,
-  "Elections & Voting": 78,
   "Local Government & Special Districts": 76,
   "Human Services & Family": 72,
   "Transportation": 69,
@@ -21,7 +21,7 @@
   "Water & Environment": 32,
   "Agriculture & Wildlife": 26,
   "Courts & Civil Law": 24,
-  "Technology & Privacy": 23,
+  "Technology & Privacy": 24,
   "Alcohol, Gambling & Cannabis": 20,
   "Firearms": 13,
   "Veterans & Military": 12,
@@ -31,6 +31,6 @@
   "Immigration & Border": 7,
   "Civil Rights & Discrimination": 7
  },
- "checked": "2026-11-13T00:44:27Z",
- "last_change": "2026-11-13T00:44:27Z"
+ "checked": "2026-11-13T15:38:30Z",
+ "last_change": "2026-11-13T15:38:30Z"
 }

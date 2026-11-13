@@ -1,27 +1,6 @@
 [
 {
 "ts": "2026-11-09T21:45:05Z",
-"bill": "SB 45",
-"category": "Higher Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 46",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 47",
-"category": "Human Services & Family",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
 "bill": "SB 48",
 "category": "Labor & Occupations",
 "event": "new",
@@ -6996,6 +6975,27 @@
 "ts": "2026-11-13T00:44:27Z",
 "bill": "SB 354",
 "category": "Energy & Utilities",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-13T15:38:30Z",
+"bill": "HB 547",
+"category": "Energy & Utilities",
+"event": "text_posted",
+"was": "Energy & Utilities"
+},
+{
+"ts": "2026-11-13T15:38:30Z",
+"bill": "HB 1138",
+"category": "Elections & Voting",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-13T15:38:30Z",
+"bill": "HB 1139",
+"category": "Technology & Privacy",
 "event": "new",
 "basis": "caption"
 }
