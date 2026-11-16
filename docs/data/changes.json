@@ -1,251 +1,6 @@
 [
 {
 "ts": "2026-11-09T21:45:05Z",
-"bill": "SB 126",
-"category": "State Government & Ethics",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 127",
-"category": "Public Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 128",
-"category": "Transportation",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 129",
-"category": "Higher Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 130",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 131",
-"category": "Higher Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 132",
-"category": "Public Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 133",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 134",
-"category": "Public Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 135",
-"category": "Courts & Civil Law",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 136",
-"category": "Health Care",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 137",
-"category": "Higher Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 138",
-"category": "Veterans & Military",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 139",
-"category": "Public Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 140",
-"category": "State Government & Ethics",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 141",
-"category": "Local Government & Special Districts",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 142",
-"category": "Transportation",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 143",
-"category": "Uncategorized",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 144",
-"category": "Higher Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 145",
-"category": "Public Education",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 146",
-"category": "Higher Education",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 147",
-"category": "Labor & Occupations",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 148",
-"category": "Health Care",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 149",
-"category": "Public Education",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 150",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 151",
-"category": "Human Services & Family",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 152",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 153",
-"category": "Labor & Occupations",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 154",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 155",
-"category": "Health Care",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 156",
-"category": "Housing & Land Use",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 157",
-"category": "Agriculture & Wildlife",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 158",
-"category": "State Government & Ethics",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 159",
-"category": "Uncategorized",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 160",
-"category": "Water & Environment",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
 "bill": "SB 161",
 "category": "Criminal Justice & Public Safety",
 "event": "new",
@@ -6998,5 +6753,250 @@
 "category": "Health Care",
 "event": "new",
 "basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 592",
+"category": "Public Education",
+"event": "text_posted",
+"was": "Public Education"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1139",
+"category": "Technology & Privacy",
+"event": "text_posted",
+"was": "Technology & Privacy"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1141",
+"category": "Public Education",
+"event": "text_posted",
+"was": "Public Education"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1158",
+"category": "Local Government & Special Districts",
+"event": "text_posted",
+"was": "Local Government & Special Districts"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1160",
+"category": "Human Services & Family",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1161",
+"category": "Housing & Land Use",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1162",
+"category": "Transportation",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1163",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1164",
+"category": "Alcohol, Gambling & Cannabis",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1165",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1166",
+"category": "Criminal Justice & Public Safety",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1167",
+"category": "Technology & Privacy",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1168",
+"category": "Public Education",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1169",
+"category": "Criminal Justice & Public Safety",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1170",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1171",
+"category": "Public Education",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1172",
+"category": "Transportation",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1173",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1174",
+"category": "Labor & Occupations",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1175",
+"category": "Agriculture & Wildlife",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1176",
+"category": "Local Government & Special Districts",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1177",
+"category": "Taxes & State Budget",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1178",
+"category": "Elections & Voting",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1179",
+"category": "Taxes & State Budget",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1180",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1181",
+"category": "Water & Environment",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1182",
+"category": "Business, Finance & Insurance",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1183",
+"category": "Alcohol, Gambling & Cannabis",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "HB 1184",
+"category": "Uncategorized",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SB 396",
+"category": "Housing & Land Use",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SB 397",
+"category": "Water & Environment",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SB 398",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SB 399",
+"category": "Property Tax",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SB 400",
+"category": "Local Government & Special Districts",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-16T20:54:32Z",
+"bill": "SJR 16",
+"category": "Property Tax",
+"event": "new",
+"basis": "caption"
 }
 ]
