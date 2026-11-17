@@ -1,97 +1,6 @@
 [
 {
 "ts": "2026-11-09T21:45:05Z",
-"bill": "SB 161",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 162",
-"category": "Labor & Occupations",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 163",
-"category": "Water & Environment",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 164",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 165",
-"category": "State Government & Ethics",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 166",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 167",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 168",
-"category": "Water & Environment",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 169",
-"category": "Human Services & Family",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 170",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 171",
-"category": "Criminal Justice & Public Safety",
-"event": "new",
-"basis": "text"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 172",
-"category": "Transportation",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
-"bill": "SB 173",
-"category": "Transportation",
-"event": "new",
-"basis": "caption"
-},
-{
-"ts": "2026-11-09T21:45:05Z",
 "bill": "SB 174",
 "category": "Transportation",
 "event": "new",
@@ -6998,5 +6907,96 @@
 "category": "Property Tax",
 "event": "new",
 "basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 362",
+"category": "Alcohol, Gambling & Cannabis",
+"event": "text_posted",
+"was": "Alcohol, Gambling & Cannabis"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 441",
+"category": "Public Education",
+"event": "text_posted",
+"was": "Public Education"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 529",
+"category": "Water & Environment",
+"event": "text_posted",
+"was": "Water & Environment"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1184",
+"category": "Business, Finance & Insurance",
+"event": "text_posted",
+"was": "Uncategorized"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1185",
+"category": "Criminal Justice & Public Safety",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1186",
+"category": "Human Services & Family",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1187",
+"category": "Public Education",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1188",
+"category": "Public Education",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1189",
+"category": "Human Services & Family",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1190",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "HB 1191",
+"category": "Health Care",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "SB 399",
+"category": "Property Tax",
+"event": "text_posted",
+"was": "Property Tax"
+},
+{
+"ts": "2026-11-17T12:31:27Z",
+"bill": "SB 400",
+"category": "Local Government & Special Districts",
+"event": "text_posted",
+"was": "Local Government & Special Districts"
 }
 ]
