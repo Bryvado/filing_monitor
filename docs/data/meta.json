@@ -1,24 +1,24 @@
 {
  "session": "90R",
- "total": 1553,
- "with_text": 1472,
+ "total": 1561,
+ "with_text": 1481,
  "by_category": {
-  "Criminal Justice & Public Safety": 211,
+  "Criminal Justice & Public Safety": 213,
   "Health Care": 189,
   "Public Education": 176,
   "Local Government & Special Districts": 86,
-  "Elections & Voting": 83,
-  "State Government & Ethics": 81,
-  "Transportation": 79,
+  "Elections & Voting": 84,
+  "State Government & Ethics": 82,
+  "Transportation": 80,
   "Human Services & Family": 75,
   "Labor & Occupations": 60,
+  "Property Tax": 55,
   "Business, Finance & Insurance": 54,
-  "Property Tax": 54,
   "Higher Education": 53,
   "Energy & Utilities": 48,
   "Water & Environment": 48,
+  "Housing & Land Use": 43,
   "Taxes & State Budget": 42,
-  "Housing & Land Use": 41,
   "Agriculture & Wildlife": 28,
   "Courts & Civil Law": 26,
   "Technology & Privacy": 25,
@@ -31,6 +31,6 @@
   "Immigration & Border": 8,
   "Civil Rights & Discrimination": 7
  },
- "checked": "2026-11-17T21:17:00Z",
- "last_change": "2026-11-17T21:17:00Z"
+ "checked": "2026-11-18T02:57:33Z",
+ "last_change": "2026-11-18T02:57:33Z"
 }
