@@ -1,48 +1,6 @@
 [
 {
 "ts": "2026-11-09T23:55:16Z",
-"bill": "HB 774",
-"category": "Elections & Voting",
-"event": "text_posted",
-"was": "Uncategorized"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
-"bill": "HB 778",
-"category": "Criminal Justice & Public Safety",
-"event": "text_posted",
-"was": "Criminal Justice & Public Safety"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
-"bill": "HB 779",
-"category": "Local Government & Special Districts",
-"event": "text_posted",
-"was": "Local Government & Special Districts"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
-"bill": "HB 780",
-"category": "Elections & Voting",
-"event": "text_posted",
-"was": "Elections & Voting"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
-"bill": "HB 781",
-"category": "Taxes & State Budget",
-"event": "text_posted",
-"was": "Taxes & State Budget"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
-"bill": "HB 782",
-"category": "Elections & Voting",
-"event": "text_posted",
-"was": "Elections & Voting"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
 "bill": "HB 783",
 "category": "Courts & Civil Law",
 "event": "text_posted",
@@ -6996,6 +6954,48 @@
 "ts": "2026-11-20T00:56:38Z",
 "bill": "SB 459",
 "category": "Alcohol, Gambling & Cannabis",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1257",
+"category": "Labor & Occupations",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1258",
+"category": "Business, Finance & Insurance",
+"event": "new",
+"basis": "text"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1259",
+"category": "Taxes & State Budget",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1260",
+"category": "Business, Finance & Insurance",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1261",
+"category": "Housing & Land Use",
+"event": "new",
+"basis": "caption"
+},
+{
+"ts": "2026-11-20T17:11:02Z",
+"bill": "HB 1262",
+"category": "Water & Environment",
 "event": "new",
 "basis": "text"
 }
