@@ -1,13 +1,6 @@
 [
 {
 "ts": "2026-11-09T23:55:16Z",
-"bill": "HB 816",
-"category": "Uncategorized",
-"event": "caption_changed",
-"was": "Uncategorized"
-},
-{
-"ts": "2026-11-09T23:55:16Z",
 "bill": "HB 820",
 "category": "Uncategorized",
 "event": "caption_changed",
@@ -6998,5 +6991,12 @@
 "category": "Public Education",
 "event": "new",
 "basis": "text"
+},
+{
+"ts": "2026-11-21T04:00:03Z",
+"bill": "HB 1267",
+"category": "Business, Finance & Insurance",
+"event": "text_posted",
+"was": "Business, Finance & Insurance"
 }
 ]
